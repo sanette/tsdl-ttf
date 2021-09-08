@@ -10,7 +10,7 @@ type 'a result = 'a Sdl.result
 let error () = Error (`Msg (Sdl.get_error ()))
 
 let zero_to_ok =
-  let read = function 0 -> Ok () | err -> error () in
+  let read = function 0 -> Ok () | _err -> error () in
   view ~read ~write:(fun _ -> assert false) int
 
 let bool =
@@ -23,8 +23,8 @@ let int32_as_uint32_t =
 let int64_as_long =
   view ~read:Signed.Long.to_int64 ~write:Signed.Long.of_int64 long
 
-let surface =
-  view ~read:Sdl.unsafe_surface_of_ptr ~write:Sdl.unsafe_ptr_of_surface nativeint
+(* let surface =
+ *   view ~read:Sdl.unsafe_surface_of_ptr ~write:Sdl.unsafe_ptr_of_surface nativeint *)
 let surface_result =
   let read v =
     if Nativeint.(compare v zero) = 0 then
@@ -65,8 +65,8 @@ let open_font_rw = foreign "TTF_OpenFontRW" (rw_ops @-> int @-> int @-> returnin
 let open_font_index_rw =
   foreign "TTF_OpenFontIndexRW" (rw_ops @-> int @-> int @-> int64_as_long @-> returning font_result)
 
-let byte_swapped_unicode =
-  foreign "TTF_ByteSwappedUNICODE" (int @-> returning void)
+(* let byte_swapped_unicode =
+ *   foreign "TTF_ByteSwappedUNICODE" (int @-> returning void) *)
 
 module Style = struct
   type t = Unsigned.uint32
@@ -146,8 +146,8 @@ let size_utf8 f s =
   let (w,h) = (allocate int 0, allocate int 0) in
   if 0 = size_utf8 f s w h then Ok (!@ w, !@ h) else error ()
 
-let size_unicode =
-  foreign "TTF_SizeUNICODE" (font @-> ptr glyph_ucs2 @-> ptr int @-> ptr int @-> returning int)
+(* let size_unicode =
+ *   foreign "TTF_SizeUNICODE" (font @-> ptr glyph_ucs2 @-> ptr int @-> ptr int @-> returning int) *)
 
 type _color
 type color = _color structure
@@ -164,7 +164,7 @@ let color =
                                     to_int @@ getf v color_g,
                                     to_int @@ getf v color_b,
                                     to_int @@ getf v color_a) in
-    Sdl.Color.create r g b a in
+    Sdl.Color.create ~r ~g ~b ~a in
   let write v =
     let c = make color in
     setf c color_r (Unsigned.UInt8.of_int (Sdl.Color.r v));
@@ -176,23 +176,23 @@ let color =
 
 let render_text_solid = foreign "TTF_RenderText_Solid" (font @-> string @-> color @-> returning surface_result)
 let render_utf8_solid = foreign "TTF_RenderUTF8_Solid" (font @-> string @-> color @-> returning surface_result)
-let render_unicode_solid = foreign "TTF_RenderUNICODE_Solid" (font @-> ptr glyph_ucs2 @-> color @-> returning surface_result)
+(* let render_unicode_solid = foreign "TTF_RenderUNICODE_Solid" (font @-> ptr glyph_ucs2 @-> color @-> returning surface_result) *)
 
 let render_glyph_solid = foreign "TTF_RenderGlyph_Solid" (font @-> glyph_ucs2 @-> color @-> returning surface_result)
 
 let render_text_shaded = foreign "TTF_RenderText_Shaded" (font @-> string @-> color @-> color @-> returning surface_result)
 let render_utf8_shaded = foreign "TTF_RenderUTF8_Shaded" (font @-> string @-> color @-> color @-> returning surface_result)
-let render_unicode_shaded = foreign "TTF_RenderUNICODE_Shaded" (font @-> ptr glyph_ucs2 @-> color @-> color @-> returning surface_result)
+(* let render_unicode_shaded = foreign "TTF_RenderUNICODE_Shaded" (font @-> ptr glyph_ucs2 @-> color @-> color @-> returning surface_result) *)
 
 let render_glyph_shaded = foreign "TTF_RenderGlyph_Shaded" (font @-> glyph_ucs2 @-> color @-> color @-> returning surface_result)
 
 let render_text_blended = foreign "TTF_RenderText_Blended" (font @-> string @-> color @-> returning surface_result)
 let render_utf8_blended = foreign "TTF_RenderUTF8_Blended" (font @-> string @-> color @-> returning surface_result)
-let render_unicode_blended = foreign "TTF_RenderUNICODE_Blended" (font @-> ptr glyph_ucs2 @-> color @-> returning surface_result)
+(* let render_unicode_blended = foreign "TTF_RenderUNICODE_Blended" (font @-> ptr glyph_ucs2 @-> color @-> returning surface_result) *)
 
 let render_text_blended_wrapped = foreign "TTF_RenderText_Blended_Wrapped" (font @-> string @-> color @-> int32_as_uint32_t @-> returning surface_result)
 let render_utf8_blended_wrapped = foreign "TTF_RenderUTF8_Blended_Wrapped" (font @-> string @-> color @-> int32_as_uint32_t @-> returning surface_result)
-let render_unicode_blended_wrapped = foreign "TTF_RenderUNICODE_Blended_Wrapped" (font @-> ptr glyph_ucs2 @-> color @-> int32_as_uint32_t @-> returning surface_result)
+(* let render_unicode_blended_wrapped = foreign "TTF_RenderUNICODE_Blended_Wrapped" (font @-> ptr glyph_ucs2 @-> color @-> int32_as_uint32_t @-> returning surface_result) *)
 
 let render_glyph_blended = foreign "TTF_RenderGlyph_Blended" (font @-> glyph_ucs2 @-> color @-> returning surface_result)
 

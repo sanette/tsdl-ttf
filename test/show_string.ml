@@ -22,12 +22,12 @@ let () =
   Sdl.render_set_logical_size renderer display_width display_height >>= fun () ->
   Sdl.get_window_surface window >>= fun display ->
   let e = Sdl.Event.create () in
-  let r = Sdl.Rect.create 0 0 0 0 in
-  let fg_color = Sdl.Color.create 255 255 255 255 in
+  let r = Sdl.Rect.create ~x:0 ~y:0 ~w:0 ~h:0 in
+  let fg_color = Sdl.Color.create ~r:255 ~g:255 ~b:255 ~a:255 in
   let rec loop () =
     Sdl.fill_rect display None 0l >>= fun () ->
     Ttf.render_text_solid font "foobar" fg_color >>= fun (sface) ->
-    Sdl.blit_surface sface None display (Some r) >>= fun () ->
+    Sdl.blit_surface ~src:sface None ~dst:display (Some r) >>= fun () ->
     Sdl.update_window_surface window >>= fun () ->
     match Sdl.wait_event (Some e) with
     | Error (`Msg err) -> Sdl.log "Could not wait event: %s" err; ()
