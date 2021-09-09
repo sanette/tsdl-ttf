@@ -23,7 +23,9 @@ Via [opam](https://opam.ocaml.org/):
 
 ## Documentation
 
-Documentation can be generated with `dune build @doc`, (or
-`./make_doc.sh`) but the binding follows the SDL2_ttf interface
-closely, so it may be sufficient to consult
+Documentation is
+[here](https://sanette.github.io/tsdl-ttf/Ttf/index.html), it can be
+generated with `dune build @doc`, (or `./make_doc.sh`) but the binding
+follows the SDL2_ttf interface closely, so it may be sufficient to
+consult
 [its documentation](https://www.libsdl.org/projects/SDL_ttf/docs/index.html).
