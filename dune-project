@@ -16,5 +16,6 @@
  (depends
   (ocaml (>= 4.03))
   (tsdl (>= 0.9.0))
+  conf-sdl2-ttf
   (ctypes (>= 0.4.0))
   ctypes-foreign))
