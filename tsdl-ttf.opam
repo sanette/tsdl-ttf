@@ -7,18 +7,20 @@ description:
 maintainer: ["Vu Ngoc San <san.vu-ngoc@laposte.net>"]
 authors: ["Julian Squires <julian@cipht.net>"]
 license: "BSD-3-Clause"
+tags: ["tsdl" "SDL" "graphics" "bindings" "ttf"]
 homepage: "https://github.com/sanette/tsdl-ttf"
 bug-reports: "https://github.com/sanette/tsdl-ttf/issues"
 depends: [
-  "dune" {>= "1.11"}
+  "dune" {>= "2.7"}
   "ocaml" {>= "4.03"}
-  "tsdl" {>= "0.9.0"}
+  "tsdl" {>= "0.9.1"}
   "conf-sdl2-ttf"
   "ctypes" {>= "0.4.0"}
   "ctypes-foreign"
+  "odoc" {with-doc}
 ]
 build: [
-  ["dune" "subst"] {pinned}
+  ["dune" "subst"] {dev}
   [
     "dune"
     "build"

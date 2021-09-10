@@ -1,7 +1,6 @@
 open Ctypes
 open Foreign
 open Tsdl
-open Result
 
 module Ttf = struct
 
@@ -52,6 +51,14 @@ let font_result =
     | Error _ -> None
     | Ok s -> Some s
   in view ~read ~write font_opt
+
+(* This "hack" seems to be necessary for linux if you want to use
+   #require "tsdl-ttf"
+   in the toplevel, see
+   https://github.com/ocamllabs/ocaml-ctypes/issues/70 *)
+let foreign name typ =
+  foreign name typ ~from:Dl.(dlopen ~filename:"libSDL2_ttf-2.0.so"
+                               ~flags:[RTLD_NOW])
 
 let init = foreign "TTF_Init" (void @-> returning zero_to_ok)
 

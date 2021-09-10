@@ -1,4 +1,4 @@
-(lang dune 1.11)
+(lang dune 2.7)
 (version "0.3")
 (name tsdl-ttf)
 (generate_opam_files true)
@@ -15,7 +15,7 @@
  (tags ("tsdl" "SDL" "graphics" "bindings" "ttf"))
  (depends
   (ocaml (>= 4.03))
-  (tsdl (>= 0.9.0))
+  (tsdl (>= 0.9.1))
   conf-sdl2-ttf
   (ctypes (>= 0.4.0))
   ctypes-foreign))
