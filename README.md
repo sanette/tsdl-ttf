@@ -29,3 +29,9 @@ generated with `dune build @doc`, (or `./make_doc.sh`) but the binding
 follows the SDL2_ttf interface closely, so it may be sufficient to
 consult
 [its documentation](https://www.libsdl.org/projects/SDL_ttf/docs/index.html).
+
+## WARNING V0.3 Breaking change
+
+Starting from 0.3, the library name is the same as the opam package
+name `tsdl-ttf`. (The library name used to be `tsdl_ttf`, which
+was confusing).
