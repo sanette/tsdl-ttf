@@ -30,6 +30,9 @@ follows the SDL2_ttf interface closely, so it may be sufficient to
 consult
 [its documentation](https://www.libsdl.org/projects/SDL_ttf/docs/index.html).
 
+Starting from version 0.3, the library is usable in a toplevel (with
+`#require "tsdl-ttf"`).
+
 ## WARNING V0.3 Breaking change
 
 Starting from 0.3, the library name is the same as the opam package
