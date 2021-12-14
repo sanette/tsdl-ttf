@@ -79,6 +79,7 @@ module Style = struct
   type t = Unsigned.uint32
   let i = Unsigned.UInt32.of_int
   let ( + ) = Unsigned.UInt32.logor
+  let ( - ) st flag = Unsigned.UInt32.(logand st (lognot flag))
   let test f m = Unsigned.UInt32.(compare (logand f m) zero <> 0)
   let eq f f' = Unsigned.UInt32.(compare f f' = 0)
   let normal = i 0

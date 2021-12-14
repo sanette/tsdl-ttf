@@ -26,6 +26,7 @@ val open_font_index_rw : Tsdl.Sdl.rw_ops -> int -> int -> int64 -> font result
 module Style : sig
   type t
   val ( + ) : t -> t -> t
+  val ( - ) : t -> t -> t
   val test : t -> t -> bool
   val eq : t -> t -> bool
   val normal : t
