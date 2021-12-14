@@ -1,6 +1,11 @@
+(rule
+ (targets c_library_flags.sexp)
+ (action
+  (run ../config/discover.exe)))
+
 (library
   (name tsdl_ttf)
   (public_name tsdl-ttf)
   (modules tsdl_ttf)
   (libraries ctypes tsdl)
-  (c_library_flags -lSDL2_ttf))
+  (c_library_flags (:include c_library_flags.sexp)))
