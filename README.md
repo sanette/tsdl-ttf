@@ -28,7 +28,7 @@ Documentation is
 generated with `dune build @doc`, (or `./make_doc.sh`) but the binding
 follows the SDL2_ttf interface closely, so it may be sufficient to
 consult
-[its documentation](https://www.libsdl.org/projects/SDL_ttf/docs/index.html).
+[its documentation](https://wiki.libsdl.org/SDL_ttf/FrontPage).
 
 Starting from version 0.3, the library is usable in a toplevel (with
 `#require "tsdl-ttf"`).
