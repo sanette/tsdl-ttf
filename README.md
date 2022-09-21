@@ -38,3 +38,8 @@ Starting from version 0.3, the library is usable in a toplevel (with
 Starting from 0.3, the library name is the same as the opam package
 name `tsdl-ttf`. (The library name used to be `tsdl_ttf`, which
 was confusing).
+
+## CI
+
+https://ci.ocamllabs.io/github/sanette/tsdl-ttf
+
