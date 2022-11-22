@@ -56,18 +56,15 @@ let font_result =
    #require "tsdl-ttf"
    in the toplevel, see
    https://github.com/ocamllabs/ocaml-ctypes/issues/70 *)
-let dllib : Dl.library option =
-  if !Sys.interactive then (
-    let filename =
+let dllib : Dl.library =
+  let filename =
       match Build_config.system with
-        | "macosx" -> "libSDL2_ttf-2.0.0.dylib"
-        | _ -> "libSDL2_ttf-2.0.so.0"
+      | "macosx" -> "libSDL2_ttf-2.0.0.dylib"
+      | _ -> "libSDL2_ttf-2.0.so.0"
     in
-    Some Dl.(dlopen ~filename ~flags:[RTLD_NOW]))
-  else
-    None
+    Dl.(dlopen ~filename ~flags:[RTLD_NOW])
 
-let foreign = foreign ?from:dllib
+let foreign = foreign ~from:dllib
 
 let init = foreign "TTF_Init" (void @-> returning zero_to_ok)
 
