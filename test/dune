@@ -3,5 +3,4 @@
  (modules show_string)
  (libraries bigarray tsdl tsdl_ttf)
  (deps "f500.ttf")
- (modes exe)
-)
+ (modes exe))
