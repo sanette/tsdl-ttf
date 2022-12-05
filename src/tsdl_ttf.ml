@@ -52,19 +52,51 @@ let font_result =
     | Ok s -> Some s
   in view ~read ~write font_opt
 
+ (* pkg-config --variable=libdir SDL2_ttf *)
+  (* Use Configurator.V1.Pkg_config instead? *)
+  let pkg_config () =
+    try
+      let ic = Unix.open_process_in "pkg-config --variable=libdir SDL2_ttf" in
+      let dir = input_line ic in
+      close_in ic;
+      Some dir
+    with _ -> None
+
 (* This "hack" seems to be necessary for linux if you want to use
    #require "tsdl-ttf"
    in the toplevel, see
    https://github.com/ocamllabs/ocaml-ctypes/issues/70 *)
-let dllib : Dl.library =
-  let filename =
+ let from : Dl.library option =
+    print_endline ("Target = " ^ Build_config.system);
+    let env = try Sys.getenv "LIBSLD2_PATH" with Not_found -> "" in
+    let filename, path =
       match Build_config.system with
-      | "macosx" -> "libSDL2_ttf-2.0.0.dylib"
-      | _ -> "libSDL2_ttf-2.0.so.0"
+      | "macosx" -> ("libSDL2_ttf-2.0.0.dylib", [ "/opt/homebrew/lib/" ])
+      | _ ->
+          ( "libSDL2_ttf-2.0.so.0",
+            [ "/usr/lib/x86_64-linux-gnu/"; "/usr/local/lib" ] )
     in
-    Dl.(dlopen ~filename ~flags:[RTLD_NOW])
+    let rec loop = function
+      | [] -> None
+      | dir :: rest -> (
+          let filename =
+            if dir = "" then filename else Filename.concat dir filename
+          in
+          try Some Dl.(dlopen ~filename ~flags:[ RTLD_NOW ])
+          with _ -> loop rest)
+    in
+    match loop (env :: path) with
+    | Some f -> Some f
+    | None -> (
+        (* We execute pkg_config only if everything else failed. *)
+        match pkg_config () with
+        | Some dir -> loop [ dir ]
+        | None ->
+            print_endline
+              ("Cannot find " ^ filename ^ ", please set LIBSDL2_PATH");
+            None)
 
-let foreign = foreign ~from:dllib
+  let foreign = foreign ?from
 
 let init = foreign "TTF_Init" (void @-> returning zero_to_ok)
 
