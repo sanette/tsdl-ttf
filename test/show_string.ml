@@ -25,14 +25,13 @@ let () =
   let display_width = 640 in
   let display_height = 480 in
   match
-    Sdl.create_window_and_renderer ~w:display_width ~h:display_height
+    Sdl.create_window "tsdl-ttf test" ~w:display_width ~h:display_height
       Sdl.Window.windowed
   with
   | Error (`Msg e) ->
       Printf.printf "Surface was generated but cannot be shown: %s" e
-  | Ok (window, renderer) ->
-      Sdl.render_set_logical_size renderer display_width display_height
-      >>= fun () ->
+  | Ok window ->
+      Sdl.set_window_size window ~w:display_width ~h:display_height;
       Sdl.get_window_surface window >>= fun display ->
       let e = Sdl.Event.create () in
       let r = Sdl.Rect.create ~x:0 ~y:0 ~w:0 ~h:0 in
