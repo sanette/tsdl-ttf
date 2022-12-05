@@ -30,27 +30,31 @@ let () =
   with
   | Error (`Msg e) ->
       Printf.printf "Surface was generated but cannot be shown: %s" e
-  | Ok window ->
+  | Ok window -> (
       Sdl.set_window_size window ~w:display_width ~h:display_height;
-      Sdl.get_window_surface window >>= fun display ->
-      let e = Sdl.Event.create () in
-      let r = Sdl.Rect.create ~x:0 ~y:0 ~w:0 ~h:0 in
-      let rec loop () =
-        Sdl.fill_rect display None 0l >>= fun () ->
-        Sdl.blit_surface ~src:sface None ~dst:display (Some r) >>= fun () ->
-        Sdl.update_window_surface window >>= fun () ->
-        match Sdl.wait_event (Some e) with
-        | Error (`Msg err) ->
-            Sdl.log "Could not wait event: %s" err;
-            ()
-        | Ok () -> (
-            match Sdl.Event.(enum (get e typ)) with
-            | `Quit | `Key_down -> ()
-            | _ -> loop ())
-      in
-      unwind
-        ~protect:(fun () ->
-          Sdl.destroy_window window;
-          Ttf.quit ();
-          Sdl.quit ())
-        loop ()
+      match Sdl.get_window_surface window with
+      | Error (`Msg e) ->
+          Printf.printf
+            "Text surface was generated but cannot get window surface: %s" e
+      | Ok display ->
+          let e = Sdl.Event.create () in
+          let r = Sdl.Rect.create ~x:0 ~y:0 ~w:0 ~h:0 in
+          let rec loop () =
+            Sdl.fill_rect display None 0l >>= fun () ->
+            Sdl.blit_surface ~src:sface None ~dst:display (Some r) >>= fun () ->
+            Sdl.update_window_surface window >>= fun () ->
+            match Sdl.wait_event (Some e) with
+            | Error (`Msg err) ->
+                Sdl.log "Could not wait event: %s" err;
+                ()
+            | Ok () -> (
+                match Sdl.Event.(enum (get e typ)) with
+                | `Quit | `Key_down -> ()
+                | _ -> loop ())
+          in
+          unwind
+            ~protect:(fun () ->
+              Sdl.destroy_window window;
+              Ttf.quit ();
+              Sdl.quit ())
+            loop ())
