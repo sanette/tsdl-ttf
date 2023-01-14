@@ -29,17 +29,18 @@ let () =
       Sdl.Window.windowed
   with
   | Error (`Msg e) ->
-      Printf.printf "Surface was generated but cannot be shown: %s" e
+      Printf.printf "Surface was generated but cannot be shown: %s\n" e
   | Ok window -> (
       Sdl.set_window_size window ~w:display_width ~h:display_height;
       match Sdl.get_window_surface window with
       | Error (`Msg e) ->
           Printf.printf
-            "Text surface was generated but cannot get window surface: %s" e
+            "Text surface was generated but cannot get window surface: %s\n" e
       | Ok display ->
           let e = Sdl.Event.create () in
           let r = Sdl.Rect.create ~x:0 ~y:0 ~w:0 ~h:0 in
           let rec loop () =
+            print_endline "loop";
             Sdl.fill_rect display None 0l >>= fun () ->
             Sdl.blit_surface ~src:sface None ~dst:display (Some r) >>= fun () ->
             Sdl.update_window_surface window >>= fun () ->
@@ -52,9 +53,12 @@ let () =
                 | `Quit | `Key_down -> ()
                 | _ -> loop ())
           in
-          unwind
-            ~protect:(fun () ->
-              Sdl.destroy_window window;
-              Ttf.quit ();
-              Sdl.quit ())
-            loop ())
+          if Sdl.get_current_video_driver () = Some "dummy" then
+            print_endline "Dummy video driver"
+          else
+            unwind
+              ~protect:(fun () ->
+                Sdl.destroy_window window;
+                Ttf.quit ();
+                Sdl.quit ())
+              loop ())

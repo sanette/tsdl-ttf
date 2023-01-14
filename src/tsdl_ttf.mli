@@ -1,11 +1,15 @@
+(*---------------------------------------------------------------------------
+   Copyright (c) 2016-2023 The tsdl-image programmers. All rights reserved.
+  ---------------------------------------------------------------------------*)
+
+(** SDL2_ttf bindings for use with Tsdl
+
+    {b References}
+
+    - {{:https://github.com/sanette/tsdl-ttf} source on github}
+
+    - {{:https://wiki.libsdl.org/SDL_ttf/CategoryAPI} SDL_ttf API} *)
 module Ttf : sig
-  (** SDL2_ttf bindings for use with Tsdl
-
-      The UCS-2 Unicode bindings have been omitted; UCS-2 is obsolete, and the
-      current implementation of SDL2_ttf converts such strings to UTF-8 before
-      using them anyway.
-
-      {{:https://www.libsdl.org/projects/SDL_ttf/docs/index.html} SDL2_ttf API} *)
 
   type 'a result = 'a Tsdl.Sdl.result
 

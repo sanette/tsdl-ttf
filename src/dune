@@ -3,12 +3,12 @@
  (public_name tsdl-ttf)
  (modules tsdl_ttf build_config)
  (private_modules build_config)
- (libraries ctypes tsdl)
+ (libraries tsdl)
  (c_library_flags
   (:include c_library_flags.sexp)))
 
 (rule
- (targets c_library_flags.sexp)
+ (targets c_flags.sexp c_library_flags.sexp)
  (action
   (run ../config/discover.exe)))
 
