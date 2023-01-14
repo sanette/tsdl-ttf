@@ -10,7 +10,6 @@
 
     - {{:https://wiki.libsdl.org/SDL_ttf/CategoryAPI} SDL_ttf API} *)
 module Ttf : sig
-
   type 'a result = 'a Tsdl.Sdl.result
 
   val init : unit -> unit result
