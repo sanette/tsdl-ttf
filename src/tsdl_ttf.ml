@@ -65,7 +65,8 @@ module Ttf = struct
      in the toplevel, see
      https://github.com/ocamllabs/ocaml-ctypes/issues/70 *)
   let from : Dl.library option =
-    Sdl.log "Loading Sdl_ttf, Target = %s" Build_config.system;
+    Sdl.(log_info Log.category_system
+       "Loading Sdl_ttf, Target = %s" Build_config.system);
     let env = try Sys.getenv "LIBSLD2_PATH" with Not_found -> "" in
     let filename, path =
       match Build_config.system with

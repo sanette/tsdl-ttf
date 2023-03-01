@@ -1,3 +1,7 @@
+# Next release
+
+Use system category to log "Loading Sdl_ttf" message.
+
 # 0.5 2022/11/30 trying to autodetect library path
 
 And add workflow for github actions for testing dynamic libraries from
