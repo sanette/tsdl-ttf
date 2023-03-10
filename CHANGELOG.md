@@ -1,6 +1,8 @@
-# Next release
+# Pending
 
-Use system category to log "Loading Sdl_ttf" message.
+* Use system category to log "Loading Sdl_ttf" message.
+* Fix typo environment lookup of `LIBSLD2_PATH` to be correct `LIBSDL2_PATH`.
+* Locate `SDL2_ttf.dll` on Windows.
 
 # 0.5 2022/11/30 trying to autodetect library path
 
