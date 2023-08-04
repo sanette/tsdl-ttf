@@ -4,6 +4,7 @@ open Tsdl
 
 module Ttf = struct
   type 'a result = 'a Sdl.result
+  let debug = false (* set this to false before release *)
 
   let error () = Error (`Msg (Sdl.get_error ()))
 
@@ -65,33 +66,33 @@ module Ttf = struct
      in the toplevel, see
      https://github.com/ocamllabs/ocaml-ctypes/issues/70 *)
   let from : Dl.library option =
-    Sdl.(log_info Log.category_system
-       "Loading Sdl_ttf, Target = %s" Build_config.system);
+    if debug then Sdl.(log_info Log.category_system
+                         "Loading Sdl_ttf, Target = %s" Build_config.system);
     let env = try Sys.getenv "LIBSDL2_PATH" with Not_found -> "" in
     let filename, path =
       match Build_config.system with
       | "macosx" -> ("libSDL2_ttf-2.0.0.dylib", [ "/opt/homebrew/lib/" ])
       | "win32" | "win64" ->
-          (* On native Windows DLLs are loaded from the PATH *)
-          ("SDL2_ttf.dll", [ "" ])
+        (* On native Windows DLLs are loaded from the PATH *)
+        ("SDL2_ttf.dll", [ "" ])
       | "cygwin" | "mingw" ->
-          (* For Windows POSIX emulators (Cygwin and MSYS2), hardcoded
-             locations are available in addition to the PATH *)
-          ( "SDL2_ttf.dll",
-            [
-              "";
-              "/usr/x86_64-w64-mingw32/sys-root/mingw/bin";
-              "/usr/i686-w64-mingw32/sys-root/mingw/bin";
-              "/clangarm64/bin";
-              "/clang64/bin";
-              "/clang32/bin";
-              "/ucrt64/bin";
-              "/mingw64/bin";
-              "/mingw32/bin";
-            ] )
+        (* For Windows POSIX emulators (Cygwin and MSYS2), hardcoded
+           locations are available in addition to the PATH *)
+        ( "SDL2_ttf.dll",
+          [
+            "";
+            "/usr/x86_64-w64-mingw32/sys-root/mingw/bin";
+            "/usr/i686-w64-mingw32/sys-root/mingw/bin";
+            "/clangarm64/bin";
+            "/clang64/bin";
+            "/clang32/bin";
+            "/ucrt64/bin";
+            "/mingw64/bin";
+            "/mingw32/bin";
+          ] )
       | _ ->
-          ( "libSDL2_ttf-2.0.so.0",
-            [ "/usr/lib/x86_64-linux-gnu/"; "/usr/local/lib" ] )
+        ( "libSDL2_ttf-2.0.so.0",
+          [ "/usr/lib/x86_64-linux-gnu/"; "/usr/local/lib" ] )
     in
     let rec loop = function
       | [] -> None
@@ -109,9 +110,9 @@ module Ttf = struct
         match pkg_config () with
         | Some dir -> loop [ dir ]
         | None ->
-            print_endline
-              ("Cannot find " ^ filename ^ ", please set LIBSDL2_PATH");
-            None)
+          print_endline
+            ("Cannot find " ^ filename ^ ", please set LIBSDL2_PATH");
+          None)
 
   let foreign = foreign ?from
   let init = foreign "TTF_Init" (void @-> returning zero_to_ok)
