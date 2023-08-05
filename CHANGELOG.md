@@ -1,4 +1,4 @@
-# Pending
+# 0.6 2023/08/05 hide startup log
 
 * Use system category to log "Loading Sdl_ttf" message. (We now
   log only for dev versions.)
