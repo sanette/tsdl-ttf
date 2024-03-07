@@ -1,3 +1,9 @@
+# Pending
+
+* Allow exact location of `libSDL2_ttf-2.0.so.0` to be set in
+  `LIBSDL2_TTF_SHLIB` for situations where you have a debug shared
+  library or you don't want `pkg-config` invoked.
+
 # 0.6 2023/08/05 hide startup log
 
 * Use system category to log "Loading Sdl_ttf" message. (We now
