@@ -205,8 +205,14 @@ module Ttf = struct
   let glyph_ucs2 =
     view ~read:Unsigned.UInt16.to_int ~write:Unsigned.UInt16.of_int uint16_t
 
+  let glyph_32 =
+    view ~read:Unsigned.UInt32.to_int ~write:Unsigned.UInt32.of_int uint32_t
+
   let glyph_is_provided =
     foreign "TTF_GlyphIsProvided" (font @-> glyph_ucs2 @-> returning bool)
+
+  let glyph_is_provided32 =
+    foreign "TTF_GlyphIsProvided32" (font @-> glyph_32 @-> returning bool)
 
   module GlyphMetrics = struct
     type t = {

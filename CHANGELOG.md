@@ -1,3 +1,7 @@
+# current
+
+* add `Ttf.glyph_is_provided32`, see https://wiki.libsdl.org/SDL2_ttf/TTF_GlyphIsProvided32
+
 # 0.6 2023/08/05 hide startup log
 
 * Use system category to log "Loading Sdl_ttf" message. (We now

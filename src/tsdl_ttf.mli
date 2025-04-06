@@ -61,6 +61,7 @@ module Ttf : sig
   val font_face_family_name : font -> string
   val font_face_style_name : font -> string
   val glyph_is_provided : font -> int -> bool
+  val glyph_is_provided32 : font -> int -> bool
 
   module GlyphMetrics : sig
     type t = {
