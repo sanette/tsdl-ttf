@@ -77,7 +77,7 @@ module Ttf = struct
       | "win32" | "win64" ->
           (* On native Windows DLLs are loaded from the PATH *)
           ("SDL2_ttf.dll", [ "" ])
-      | "cygwin" | "mingw" ->
+      | "cygwin" | "mingw" | "mingw64" ->
           (* For Windows POSIX emulators (Cygwin and MSYS2), hardcoded
              locations are available in addition to the PATH *)
           ( "SDL2_ttf.dll",

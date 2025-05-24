@@ -1,6 +1,7 @@
 # current
 
 * add `Ttf.glyph_is_provided32`, see https://wiki.libsdl.org/SDL2_ttf/TTF_GlyphIsProvided32
+* Fix DLL lookup for current OPAM+MingW64 installations
 
 # 0.6 2023/08/05 hide startup log
 
