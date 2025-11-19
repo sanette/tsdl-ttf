@@ -318,6 +318,10 @@ module Ttf = struct
     foreign "TTF_RenderGlyph_Solid"
       (font @-> glyph_ucs2 @-> color @-> returning surface_result)
 
+  let render_glyph32_solid =
+    foreign "TTF_RenderGlyph32_Solid"
+      (font @-> glyph_32 @-> color @-> returning surface_result)
+
   let render_text_shaded =
     foreign "TTF_RenderText_Shaded"
       (font @-> string @-> color @-> color @-> returning surface_result)
@@ -330,6 +334,10 @@ module Ttf = struct
   let render_glyph_shaded =
     foreign "TTF_RenderGlyph_Shaded"
       (font @-> glyph_ucs2 @-> color @-> color @-> returning surface_result)
+
+  let render_glyph32_shaded =
+    foreign "TTF_RenderGlyph32_Shaded"
+      (font @-> glyph_32 @-> color @-> color @-> returning surface_result)
 
   let render_text_blended =
     foreign "TTF_RenderText_Blended"
@@ -360,6 +368,10 @@ module Ttf = struct
   let render_glyph_blended =
     foreign "TTF_RenderGlyph_Blended"
       (font @-> glyph_ucs2 @-> color @-> returning surface_result)
+
+  let render_glyph32_blended =
+    foreign "TTF_RenderGlyph32_Blended"
+      (font @-> glyph_32 @-> color @-> returning surface_result)
 
   let close_font = foreign "TTF_CloseFont" (font @-> returning void)
   let quit = foreign "TTF_Quit" (void @-> returning void)

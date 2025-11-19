@@ -86,6 +86,9 @@ module Ttf : sig
   val render_glyph_solid :
     font -> int -> Tsdl.Sdl.color -> Tsdl.Sdl.surface result
 
+  val render_glyph32_solid :
+    font -> int -> Tsdl.Sdl.color -> Tsdl.Sdl.surface result
+
   val render_text_shaded :
     font ->
     string ->
@@ -103,6 +106,9 @@ module Ttf : sig
   val render_glyph_shaded :
     font -> int -> Tsdl.Sdl.color -> Tsdl.Sdl.color -> Tsdl.Sdl.surface result
 
+  val render_glyph32_shaded :
+    font -> int -> Tsdl.Sdl.color -> Tsdl.Sdl.color -> Tsdl.Sdl.surface result
+
   val render_text_blended :
     font -> string -> Tsdl.Sdl.color -> Tsdl.Sdl.surface result
 
@@ -116,5 +122,8 @@ module Ttf : sig
     font -> string -> Tsdl.Sdl.color -> int32 -> Tsdl.Sdl.surface result
 
   val render_glyph_blended :
+    font -> int -> Tsdl.Sdl.color -> Tsdl.Sdl.surface result
+
+  val render_glyph32_blended :
     font -> int -> Tsdl.Sdl.color -> Tsdl.Sdl.surface result
 end
