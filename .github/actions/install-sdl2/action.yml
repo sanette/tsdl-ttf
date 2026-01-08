@@ -14,27 +14,54 @@ runs:
           mingw-w64-i686-pkg-config
           mingw-w64-x86_64-toolchain
           mingw-w64-i686-toolchain
-        # install in the well-known location so subsequent steps can rely on it
         location: C:\msys64
 
-    - name: Export MinGW bins and PKG_CONFIG_PATH for later steps
-      if: ${{ runner.os == 'Windows' }}
-      shell: bash
-      run: |
-        # Make MSYS2's mingw bins available to later steps (added to PATH)
-        echo "C:\msys64\mingw64\bin" >> $GITHUB_PATH
-        echo "C:\msys64\mingw32\bin" >> $GITHUB_PATH
-
-        # Tell pkg-config where to find .pc files
-        echo "PKG_CONFIG_PATH=C:\msys64\mingw64\lib\pkgconfig;C:\msys64\mingw32\lib\pkgconfig" >> $GITHUB_ENV
-
-    - name: Quick verification (PowerShell)
+    - name: Create pkg-config wrapper and export PATH + PKG_CONFIG_PATH
       if: ${{ runner.os == 'Windows' }}
       shell: powershell
       run: |
-        # Ensure current step sees the new bins immediately
-        $env:PATH = "C:\msys64\mingw64\bin;C:\msys64\mingw32\bin;" + $env:PATH
-        Write-Host "pkg-config resolved to:"
+        $wrapperDir = 'C:\pkg-config'
+        New-Item -ItemType Directory -Path $wrapperDir -Force | Out-Null
+
+        $target = 'C:\msys64\mingw64\bin\pkg-config.exe'
+        if (-not (Test-Path $target)) {
+          Write-Error "Expected pkg-config at $target but it was not found."
+          exit 1
+        }
+
+        # Create a simple cmd wrapper forwarder
+        $wrapper = Join-Path $wrapperDir 'pkg-config.cmd'
+        @"
+@echo off
+"%~dp0\..\msys64\mingw64\bin\pkg-config.exe" %*
+"@ | Out-File -FilePath $wrapper -Encoding ASCII
+
+        # But the above assumes wrapper lives next to msys; instead write absolute forwarder
+        @"
+@echo off
+""$target"" %*
+"@ | Out-File -FilePath $wrapper -Encoding ASCII
+
+        # Prepend wrapper dir to PATH for subsequent steps
+        Add-Content -Path $env:GITHUB_PATH -Value $wrapperDir
+
+        # Set PKG_CONFIG_PATH so pkg-config finds .pc files
+        $pkgpaths = 'C:\msys64\mingw64\lib\pkgconfig;C:\msys64\mingw32\lib\pkgconfig'
+        Add-Content -Path $env:GITHUB_ENV -Value ("PKG_CONFIG_PATH=" + $pkgpaths)
+
+    - name: Quick verification (uses wrapper pkg-config)
+      if: ${{ runner.os == 'Windows' }}
+      shell: powershell
+      run: |
+        Write-Host "Which pkg-config will be used (should be our wrapper):"
         Get-Command pkg-config -ErrorAction SilentlyContinue | Format-List Path,Version
-        Write-Host "SDL2 pkg version (pkg-config --modversion sdl2):"
-        pkg-config --modversion sdl2
+
+        Write-Host "Running pkg-config --modversion sdl2"
+        $ok = $true
+        try {
+          pkg-config --modversion sdl2
+        } catch {
+          Write-Host "pkg-config failed: $($_.Exception.Message)"
+          $ok = $false
+        }
+        if (-not $ok) { exit 1 }
