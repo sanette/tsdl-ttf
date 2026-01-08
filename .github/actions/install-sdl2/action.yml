@@ -1,7 +1,7 @@
 name: Install SDL2 (MSYS2 / MinGW)
 description: Install SDL2 and mingw pkg-config for both MINGW64 and MINGW32, then prepend the mingw bins and pkgconfig paths to PATH/PKG_CONFIG_PATH.
 runs:
-  using: "composite"
+  using: composite
   steps:
     - name: Install MSYS2 + MinGW packages (both arches)
       if: ${{ runner.os == 'Windows' }}
@@ -22,9 +22,10 @@ runs:
       shell: powershell
       run: |
         Write-Host "Runner temp: $env:RUNNER_TEMP"
+
         $candidates = @(
-          "C:\msys64",
-          Join-Path $env:RUNNER_TEMP "msys64"
+          'C:\msys64',
+          Join-Path $env:RUNNER_TEMP 'msys64'
         )
 
         $msys = $null
@@ -33,7 +34,6 @@ runs:
         }
 
         if (-not $msys) {
-          # fallback: search runner temp for msys64
           $found = Get-ChildItem -Path $env:RUNNER_TEMP -Directory -Recurse -ErrorAction SilentlyContinue |
                    Where-Object { $_.Name -eq 'msys64' } | Select-Object -First 1
           if ($found) { $msys = $found.FullName }
@@ -46,26 +46,24 @@ runs:
 
         Write-Host "Found msys64 at: $msys"
 
-        $mingw64_bin = Join-Path $msys "mingw64\bin"
-        $mingw32_bin = Join-Path $msys "mingw32\bin"
-        $pkgconf64 = Join-Path $msys "mingw64\lib\pkgconfig"
-        $pkgconf32 = Join-Path $msys "mingw32\lib\pkgconfig"
+        $mingw64_bin = Join-Path $msys 'mingw64\bin'
+        $mingw32_bin = Join-Path $msys 'mingw32\bin'
+        $pkgconf64 = Join-Path $msys 'mingw64\lib\pkgconfig'
+        $pkgconf32 = Join-Path $msys 'mingw32\lib\pkgconfig'
 
         Write-Host "mingw64 bin: $mingw64_bin"
         Write-Host "mingw32 bin: $mingw32_bin"
         Write-Host "pkg-config paths: $pkgconf64 ; $pkgconf32"
 
         # Prepend mingw bins to PATH for subsequent steps in the job
-        # Use GITHUB_ENV to modify PATH for following steps; include existing PATH to preserve everything
         $newPath = "$mingw64_bin;$mingw32_bin;$env:PATH"
         Add-Content -Path $env:GITHUB_ENV -Value ("PATH=" + $newPath)
 
         # Set PKG_CONFIG_PATH so pkg-config can find sdl2.pc
-        $existingPkg = $env:PKG_CONFIG_PATH
-        if ([string]::IsNullOrEmpty($existingPkg)) {
+        if ([string]::IsNullOrEmpty($env:PKG_CONFIG_PATH)) {
           $newPkg = "$pkgconf64;$pkgconf32"
         } else {
-          $newPkg = "$pkgconf64;$pkgconf32;$existingPkg"
+          $newPkg = "$pkgconf64;$pkgconf32;$env:PKG_CONFIG_PATH"
         }
         Add-Content -Path $env:GITHUB_ENV -Value ("PKG_CONFIG_PATH=" + $newPkg)
 
@@ -86,7 +84,7 @@ runs:
 
         Write-Host "Check for explicit mingw32 pkg-config:"
         if (Test-Path $mingw32_bin) {
-          $mingw32_pkg = Join-Path $mingw32_bin "pkg-config.exe"
+          $mingw32_pkg = Join-Path $mingw32_bin 'pkg-config.exe'
           if (Test-Path $mingw32_pkg) {
             & $mingw32_pkg --modversion sdl2
           } else {
@@ -101,7 +99,7 @@ runs:
           exit 1
         }
 
-    - name: Sanity: list mmingw64 pkgconfig files (PowerShell)
+    - name: Sanity: list mingw64 pkgconfig files (PowerShell)
       if: ${{ runner.os == 'Windows' }}
       shell: powershell
       run: |
