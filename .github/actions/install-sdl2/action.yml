@@ -1,3 +1,4 @@
+name: Install SDL2 (MSYS2 / MinGW)
 runs:
   using: composite
   steps:
@@ -19,42 +20,28 @@ runs:
       if: ${{ runner.os == 'Windows' }}
       shell: powershell
       run: |
-        # Where we'll search for the msys pkg-config
-        $roots = @(
-          'C:\msys64',
-          Join-Path $env:RUNNER_TEMP 'msys64',
-          $env:RUNNER_TEMP,
-          'D:\a\_temp'
-        )
+        Write-Host "Searching for mingw pkg-config.exe under RUNNER_TEMP..."
+        $found = Get-ChildItem -Path $env:RUNNER_TEMP -Filter 'pkg-config.exe' -Recurse -ErrorAction SilentlyContinue |
+                 Where-Object { $_.FullName -match 'mingw(64|32)\\bin' } |
+                 Select-Object -First 1
 
-        Write-Host "Searching for mingw pkg-config.exe under candidate roots..."
-        $pkgExe = $null
-        foreach ($r in $roots) {
-          if (-not (Test-Path $r)) { continue }
-          try {
-            $found = Get-ChildItem -Path $r -Filter 'pkg-config.exe' -Recurse -ErrorAction SilentlyContinue |
-                     Where-Object { $_.FullName -match 'mingw(64|32)\\bin' } |
-                     Select-Object -First 1
-            if ($found) { $pkgExe = $found.FullName; break }
-          } catch { }
-        }
-
-        if (-not $pkgExe) {
-          Write-Host "Fallback: check common path C:\msys64\mingw64\bin\pkg-config.exe"
+        if (-not $found) {
+          Write-Host "Not found under RUNNER_TEMP; checking C:\msys64\mingw64\bin\pkg-config.exe"
           $fallback = 'C:\msys64\mingw64\bin\pkg-config.exe'
-          if (Test-Path $fallback) { $pkgExe = $fallback }
+          if (Test-Path $fallback) {
+            $found = Get-Item $fallback
+          }
         }
 
-        if (-not $pkgExe) {
-          Write-Error "Could not locate mingw pkg-config.exe. Inspect runner temp to find msys installation."
-          # Print some helpful debug info
+        if (-not $found) {
+          Write-Error "Could not locate mingw pkg-config.exe. Dumping top level of RUNNER_TEMP for debugging:"
           Get-ChildItem -Path $env:RUNNER_TEMP -Directory -ErrorAction SilentlyContinue | Select-Object FullName,Name | Format-Table -AutoSize
           exit 1
         }
 
-        Write-Host "Found msys pkg-config at: $pkgExe"
+        $pkgExe = $found.FullName
+        Write-Host "Found pkg-config at: $pkgExe"
 
-        # Create small wrapper dir in runner temp so no permission issues
         $wrapperDir = Join-Path $env:RUNNER_TEMP 'pkg-config-wrapper'
         New-Item -ItemType Directory -Path $wrapperDir -Force | Out-Null
 
@@ -64,16 +51,16 @@ runs:
 
         Write-Host "Wrapper created at: $wrapperPath"
 
-        # Prepend wrapper dir to PATH for subsequent steps
+        # Make wrapper directory first on PATH for subsequent steps
         Add-Content -Path $env:GITHUB_PATH -Value $wrapperDir
 
-        # Derive pkgconfig directories to set PKG_CONFIG_PATH
-        $pkgDir = Split-Path -Parent $pkgExe    # ...\mingw64\bin
-        $pkgRoot = Split-Path -Parent $pkgDir   # ...\mingw64
-        $pkgconf64 = Join-Path $pkgRoot 'lib\pkgconfig'
+        # Derive pkgconfig directories from discovered pkg-config location
+        $binDir = Split-Path -Parent $pkgExe            # ...\mingw64\bin
+        $rootDir = Split-Path -Parent $binDir           # ...\mingw64
+        $pkgconf64 = Join-Path $rootDir 'lib\pkgconfig'
         $pkgconf32 = $pkgconf64 -replace 'mingw64','mingw32'
-
         $pkgPaths = "$pkgconf64;$pkgconf32"
+
         Write-Host "Setting PKG_CONFIG_PATH to: $pkgPaths"
         Add-Content -Path $env:GITHUB_ENV -Value ("PKG_CONFIG_PATH=" + $pkgPaths)
 
@@ -81,7 +68,7 @@ runs:
       if: ${{ runner.os == 'Windows' }}
       shell: powershell
       run: |
-        Write-Host "Which pkg-config will be used (expect wrapper):"
+        Write-Host "Which pkg-config will be used (should be wrapper):"
         Get-Command pkg-config -ErrorAction SilentlyContinue | Format-List Path,Version
 
         Write-Host "pkg-config --modversion sdl2"
@@ -89,7 +76,6 @@ runs:
           pkg-config --modversion sdl2
         } catch {
           Write-Error "pkg-config failed to find sdl2: $($_.Exception.Message)"
-          # show candidate pkgconfig dirs for debugging
           Write-Host "PKG_CONFIG_PATH = $env:PKG_CONFIG_PATH"
           exit 1
         }
