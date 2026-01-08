@@ -1,9 +1,7 @@
-name: Install SDL2 (MSYS2 / MinGW)
-description: Install SDL2 for MINGW32 and MINGW64 on Windows runners (msys2/setup-msys2).
 runs:
   using: "composite"
   steps:
-    - name: Install SDL2 (MINGW64)
+    - name: Install MSYS2 + MinGW packages (both arches)
       if: ${{ runner.os == 'Windows' }}
       uses: msys2/setup-msys2@v2
       with:
@@ -11,18 +9,10 @@ runs:
         update: true
         install: >
           mingw-w64-x86_64-SDL2
-          mingw-w64-x86_64-pkg-config
-          mingw-w64-x86_64-toolchain
-
-    - name: Install SDL2 (MINGW32)
-      if: ${{ runner.os == 'Windows' }}
-      uses: msys2/setup-msys2@v2
-      with:
-        msystem: MINGW32
-        update: false
-        install: >
           mingw-w64-i686-SDL2
+          mingw-w64-x86_64-pkg-config
           mingw-w64-i686-pkg-config
+          mingw-w64-x86_64-toolchain
           mingw-w64-i686-toolchain
 
     - name: Add MinGW bin dirs to PATH
@@ -32,9 +22,11 @@ runs:
         echo "C:\msys64\mingw64\bin" >> $GITHUB_PATH
         echo "C:\msys64\mingw32\bin" >> $GITHUB_PATH
 
-    - name: Verify SDL2 (pkg-config)
+    - name: Verify SDL2 pkg-config (PowerShell)
       if: ${{ runner.os == 'Windows' }}
       shell: powershell
       run: |
+        Write-Host "MINGW64 pkg-config sdl2:"
         & 'C:\msys64\mingw64\bin\pkg-config.exe' --modversion sdl2
+        Write-Host "MINGW32 pkg-config sdl2:"
         & 'C:\msys64\mingw32\bin\pkg-config.exe' --modversion sdl2
