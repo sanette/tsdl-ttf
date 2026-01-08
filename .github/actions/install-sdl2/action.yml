@@ -1,5 +1,6 @@
+name: Install SDL2 (MSYS2 / MinGW)
 runs:
-  using: composite
+  using: "composite"
   steps:
     - name: Install MSYS2 + MinGW packages (both arches)
       if: ${{ runner.os == 'Windows' }}
@@ -16,52 +17,41 @@ runs:
           mingw-w64-i686-toolchain
         location: C:\msys64
 
-    - name: Create pkg-config wrapper and export PATH + PKG_CONFIG_PATH
+    - name: Create pkg-config wrapper and export env
       if: ${{ runner.os == 'Windows' }}
       shell: powershell
       run: |
         $wrapperDir = 'C:\pkg-config'
         New-Item -ItemType Directory -Path $wrapperDir -Force | Out-Null
 
-        $target = 'C:\msys64\mingw64\bin\pkg-config.exe'
-        if (-not (Test-Path $target)) {
-          Write-Error "Expected pkg-config at $target but it was not found."
+        $msysPkg = 'C:\msys64\mingw64\bin\pkg-config.exe'
+        if (-not (Test-Path $msysPkg)) {
+          Write-Error "Expected pkg-config at $msysPkg but it was not found."
           exit 1
         }
 
-        # Create a simple cmd wrapper forwarder
-        $wrapper = Join-Path $wrapperDir 'pkg-config.cmd'
-        @"
-@echo off
-"%~dp0\..\msys64\mingw64\bin\pkg-config.exe" %*
-"@ | Out-File -FilePath $wrapper -Encoding ASCII
+        $wrapperPath = Join-Path $wrapperDir 'pkg-config.cmd'
+        $content = "@echo off`r`n`"$msysPkg`" %*"
+        Set-Content -Path $wrapperPath -Value $content -Encoding ASCII
 
-        # But the above assumes wrapper lives next to msys; instead write absolute forwarder
-        @"
-@echo off
-""$target"" %*
-"@ | Out-File -FilePath $wrapper -Encoding ASCII
-
-        # Prepend wrapper dir to PATH for subsequent steps
+        # Make the wrapper directory first on PATH for subsequent steps
         Add-Content -Path $env:GITHUB_PATH -Value $wrapperDir
 
-        # Set PKG_CONFIG_PATH so pkg-config finds .pc files
-        $pkgpaths = 'C:\msys64\mingw64\lib\pkgconfig;C:\msys64\mingw32\lib\pkgconfig'
-        Add-Content -Path $env:GITHUB_ENV -Value ("PKG_CONFIG_PATH=" + $pkgpaths)
+        # Ensure pkg-config can find .pc files from MSYS2
+        $pkgPaths = 'C:\msys64\mingw64\lib\pkgconfig;C:\msys64\mingw32\lib\pkgconfig'
+        Add-Content -Path $env:GITHUB_ENV -Value ("PKG_CONFIG_PATH=" + $pkgPaths)
 
-    - name: Quick verification (uses wrapper pkg-config)
+    - name: Quick verification
       if: ${{ runner.os == 'Windows' }}
       shell: powershell
       run: |
         Write-Host "Which pkg-config will be used (should be our wrapper):"
         Get-Command pkg-config -ErrorAction SilentlyContinue | Format-List Path,Version
 
-        Write-Host "Running pkg-config --modversion sdl2"
-        $ok = $true
+        Write-Host "pkg-config --modversion sdl2"
         try {
           pkg-config --modversion sdl2
         } catch {
-          Write-Host "pkg-config failed: $($_.Exception.Message)"
-          $ok = $false
+          Write-Error "pkg-config failed: $($_.Exception.Message)"
+          exit 1
         }
-        if (-not $ok) { exit 1 }
