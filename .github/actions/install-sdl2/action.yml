@@ -7,6 +7,7 @@ runs:
       with:
         msystem: MINGW64
         update: true
+        # Install both x86_64 and i686 SDL2, pkg-config and toolchains in one call
         install: >
           mingw-w64-x86_64-SDL2
           mingw-w64-i686-SDL2
@@ -14,8 +15,10 @@ runs:
           mingw-w64-i686-pkg-config
           mingw-w64-x86_64-toolchain
           mingw-w64-i686-toolchain
+        # Force installation location to a well-known path so subsequent steps can rely on it
+        location: C:\msys64
 
-    - name: Add MinGW bin dirs to PATH
+    - name: Add MinGW bin dirs to PATH for subsequent steps
       if: ${{ runner.os == 'Windows' }}
       shell: bash
       run: |
@@ -26,7 +29,16 @@ runs:
       if: ${{ runner.os == 'Windows' }}
       shell: powershell
       run: |
-        Write-Host "MINGW64 pkg-config sdl2:"
-        & 'C:\msys64\mingw64\bin\pkg-config.exe' --modversion sdl2
-        Write-Host "MINGW32 pkg-config sdl2:"
-        & 'C:\msys64\mingw32\bin\pkg-config.exe' --modversion sdl2
+        # Ensure PATH contains the msys64 bins in this step just in case
+        $env:PATH = "C:\msys64\mingw64\bin;C:\msys64\mingw32\bin;" + $env:PATH
+        Write-Host "Which pkg-config (should be from mingw):"
+        Get-Command pkg-config -ErrorAction SilentlyContinue | Format-List -Property Path,Version
+        Write-Host "MINGW64 pkg-config sdl2 version:"
+        pkg-config --modversion sdl2
+        Write-Host "MINGW32 pkg-config sdl2 version:"
+        # Explicitly call the i686 pkg-config if available
+        if (Test-Path 'C:\msys64\mingw32\bin\pkg-config.exe') {
+          & 'C:\msys64\mingw32\bin\pkg-config.exe' --modversion sdl2
+        } else {
+          Write-Host "mingw32 pkg-config not found at C:\msys64\mingw32\bin\pkg-config.exe"
+        }
