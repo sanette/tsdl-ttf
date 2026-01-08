@@ -24,6 +24,6 @@ let () =
             | "-link" :: rest -> loop ("-link" :: acc) true rest
             | a :: rest -> loop (a :: acc) false rest in
           loop [] false conf.libs
-        else conf.cflags in
+        else conf.libs in
       C.Flags.write_sexp "c_library_flags.sexp" libs;
       C.Flags.write_sexp "c_flags.sexp" conf.cflags)
