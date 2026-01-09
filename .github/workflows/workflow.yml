@@ -15,7 +15,7 @@ jobs:
           - windows-latest
         ocaml-compiler:
           - 5
-          - 4.13.x
+          - 4.14.x
 
     runs-on: ${{ matrix.os }}
 
@@ -54,7 +54,7 @@ jobs:
       - name: Checkout tree
         uses: actions/checkout@v6
 
-      - name: Use OCaml 4.13.x
+      - name: Use OCaml 4.14.x
         uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: 5
