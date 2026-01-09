@@ -17,17 +17,10 @@ let () =
       let libs =
         if
           List.mem "-lmingw32" conf.libs
-          (* Hack to add "-link" before "-mwindows" if it's not already
-             there: *)
+          (* Hack to remove "-mwindows" and "-lSDL2main" *)
         then
-          let rec loop acc link = function
-            | [] -> List.rev acc
-            | "-mwindows" :: rest when not link ->
-                List.rev_append acc ("-link" :: "-mwindows" :: rest)
-            | "-link" :: rest -> loop ("-link" :: acc) true rest
-            | a :: rest -> loop (a :: acc) false rest
-          in
-          loop [] false conf.libs
+          List.filter (( <> ) "-mwindows") conf.libs
+          |> List.filter (( <> ) "-lSDL2main")
         else conf.libs
       in
       C.Flags.write_sexp "c_library_flags.sexp" libs;
