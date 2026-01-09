@@ -35,7 +35,7 @@ jobs:
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
 
-      - run: opam pin add git@github.com:sanette/tsdl.git
+      - run: opam pin https://github.com/sanette/tsdl.git
 
       - run: opam install . --deps-only --with-doc --with-test
 
