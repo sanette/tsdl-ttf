@@ -15,6 +15,7 @@ module Ttf : sig
   val init : unit -> unit result
   val quit : unit -> unit
   val was_init : unit -> bool
+  val linked_version : unit -> int * int * int
 
   type font
 
