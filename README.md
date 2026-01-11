@@ -47,7 +47,7 @@ Documentation is
 generated with `dune build @doc`, (or `./make_doc.sh`) but the binding
 follows the SDL2_ttf interface closely, so it may be sufficient to
 consult
-[its documentation](https://wiki.libsdl.org/SDL_ttf/).
+[its documentation](https://wiki.libsdl.org/SDL2_ttf).
 
 Starting from version 0.3, the library is usable in a toplevel (with
 `#require "tsdl-ttf"`).
@@ -59,5 +59,8 @@ name `tsdl-ttf`. (The library name used to be `tsdl_ttf`, which
 was confusing).
 
 ## CI
+
+(This CI uses the official `tsdl`. For Windows with the modified
+`tsdl`, see the Github actions.)
 
 https://ci.ocamllabs.io/github/sanette/tsdl-ttf
