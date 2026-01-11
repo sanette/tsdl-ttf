@@ -120,7 +120,11 @@ module Ttf = struct
             None)
 
   let foreign = foreign ?from
-  let init = foreign "TTF_Init" (void @-> returning zero_to_ok)
+
+  let init =
+    pre "TTF_Init";
+    foreign "TTF_Init" (void @-> returning zero_to_ok)
+
   let version = structure "SDL_version"
   let version_major = field version "major" uint8_t
   let version_minor = field version "minor" uint8_t

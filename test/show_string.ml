@@ -20,10 +20,10 @@ let () =
   Ttf.init () >>= fun () ->
   assert (Ttf.was_init ());
   Ttf.open_font "f500.ttf" 72 >>= fun font ->
-  let fg_color = Sdl.Color.create ~r:255 ~g:255 ~b:255 ~a:255 in
-  Ttf.render_text_solid font "foobar" fg_color >>= fun sface ->
+  let fg_color = Sdl.Color.create ~r:255 ~g:200 ~b:112 ~a:255 in
+  Ttf.render_text_solid font "hello ocaml!" fg_color >>= fun sface ->
   let display_width = 640 in
-  let display_height = 480 in
+  let display_height = 200 in
   match
     Sdl.create_window "tsdl-ttf test" ~w:display_width ~h:display_height
       Sdl.Window.windowed
@@ -38,7 +38,7 @@ let () =
             "Text surface was generated but cannot get window surface: %s\n" e
       | Ok display ->
           let e = Sdl.Event.create () in
-          let r = Sdl.Rect.create ~x:0 ~y:0 ~w:0 ~h:0 in
+          let r = Sdl.Rect.create ~x:60 ~y:60 ~w:0 ~h:0 in
           let rec loop () =
             print_endline "loop";
             Sdl.fill_rect display None 0l >>= fun () ->

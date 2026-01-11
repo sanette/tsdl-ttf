@@ -1,8 +1,6 @@
 tsdl-image — SDL2\_ttf bindings for OCaml with Tsdl
 ---------------------------------------------------
 
-*WARNING*: These bindings are subject to change.
-
 Tsdl\_ttf provides bindings to
 [SDL2_ttf](https://wiki.libsdl.org/SDL_ttf/) intended to
 be used with [Tsdl](http://erratique.ch/software/tsdl).
@@ -20,6 +18,27 @@ welcome through the
 Via [opam](https://opam.ocaml.org/):
 
     opam install tsdl-ttf
+
+or, to get the latest version:
+
+	opam pin https://github.com/sanette/tsdl-ttf
+
+## Tested on Linux, MacOS, Windows (mingw64)
+
+Should work for any version of SDL2\_ttf >= 2.0.14.
+
+On Windows, before installing, you may need to select this `tsdl` version:
+
+	opam pin https://github.com/sanette/tsdl
+
+## Example
+
+See [test/test.ml](https://github.com/sanette/tsdl-ttf/blob/master/test/show_string.ml)
+
+	cd test
+	dune exec ./show_string.exe
+
+![Hello](https://github.com/sanette/tsdl-ttf/blob/master/test/hello_ocaml.png)
 
 ## Documentation
 
