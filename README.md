@@ -1,4 +1,4 @@
-tsdl-image — SDL2\_ttf bindings for OCaml with Tsdl
+tsdl-ttf — SDL2\_ttf bindings for OCaml with Tsdl
 ---------------------------------------------------
 
 Tsdl\_ttf provides bindings to
