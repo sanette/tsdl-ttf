@@ -2,7 +2,7 @@ tsdl-ttf — SDL2\_ttf bindings for OCaml with Tsdl
 ---------------------------------------------------
 
 Tsdl\_ttf provides bindings to
-[SDL2_ttf](https://wiki.libsdl.org/SDL_ttf/) intended to
+[SDL2_ttf](https://wiki.libsdl.org/SDL2_ttf/) intended to
 be used with [Tsdl](http://erratique.ch/software/tsdl).
 
 It has as siblings [tsdl-image](https://github.com/sanette/tsdl-image)
