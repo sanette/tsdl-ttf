@@ -8,7 +8,8 @@
 
     - {{:https://github.com/sanette/tsdl-ttf} source on github}
 
-    - {{:https://wiki.libsdl.org/SDL_ttf/CategoryAPI} SDL_ttf API} *)
+    - {{:https://wiki.libsdl.org/SDL2_ttf/} SDL_ttf API} *)
+
 module Ttf : sig
   type 'a result = 'a Tsdl.Sdl.result
 
