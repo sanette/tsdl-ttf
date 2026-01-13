@@ -5,9 +5,11 @@ open Tsdl
 module Ttf = struct
   type 'a result = 'a Sdl.result
 
-  (* Set [debug] to true to print the foreign symbols in the CI. Don't forget to
-     set this to false before release. *)
-  let debug = true
+  (* Set [debug] to true to print the foreign symbols in the CI. *)
+  let debug =
+    Sys.getenv_opt "OCAMLCI" = Some "true"
+    || Sys.getenv_opt "TSDL_DEBUG" = Some "true"
+
   let pre = if debug then print_endline else ignore
   let error () = Error (`Msg (Sdl.get_error ()))
 
