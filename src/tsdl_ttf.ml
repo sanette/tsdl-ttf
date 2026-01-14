@@ -78,7 +78,9 @@ module Ttf = struct
     let env = try Sys.getenv "LIBSDL2_PATH" with Not_found -> "" in
     let filename, path =
       match Build_config.system with
-      | "macosx" -> ("libSDL2_ttf-2.0.0.dylib", [ "/opt/homebrew/lib/" ])
+      | "macosx" ->
+          ( "libSDL2_ttf-2.0.0.dylib",
+            [ "/opt/homebrew/lib/"; "/opt/local/lib/" ] )
       | "win32" | "win64" ->
           (* On native Windows DLLs are loaded from the PATH *)
           ("SDL2_ttf.dll", [ "" ])
