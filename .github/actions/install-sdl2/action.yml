@@ -71,6 +71,14 @@ runs:
         Write-Host "Which pkg-config will be used (should be wrapper):"
         Get-Command pkg-config -ErrorAction SilentlyContinue | Format-List Path,Version
 
+        Write-Host "pkg-config --libs sdl2"
+         try {
+          pkg-config --libs sdl2
+        } catch {
+          Write-Error "pkg-config failed to find sdl2: $($_.Exception.Message)"
+          Write-Host "PKG_CONFIG_PATH = $env:PKG_CONFIG_PATH"
+          exit 1
+        }
         Write-Host "pkg-config --modversion sdl2"
         try {
           pkg-config --modversion sdl2
