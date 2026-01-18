@@ -77,16 +77,15 @@ module Ttf = struct
            Build_config.system));
     let env = try Sys.getenv "LIBSDL2_PATH" with Not_found -> "" in
     let filename, path =
-      match Build_config.system with
-      | "macosx" ->
-          ( "libSDL2_ttf-2.0.0.dylib",
-            [ "/opt/homebrew/lib/"; "/opt/local/lib/" ] )
-      | "win32" | "win64" ->
-          (* On native Windows DLLs are loaded from the PATH *)
-          ("SDL2_ttf.dll", [ "" ])
-      | "cygwin" | "mingw" | "mingw64" ->
-          (* For Windows POSIX emulators (Cygwin and MSYS2), hardcoded
-             locations are available in addition to the PATH *)
+      (* In principle only the basename is enough because the appropriate PATH
+         is used if SDL2_ttf was installed properly. We provide below more
+         hardcoded paths for non-standard installs where PATH is not correctly
+         set. *)
+      match (Sys.os_type, Build_config.system) with
+      | _, "macosx" ->
+          ( "libSDL2_ttf.dylib",
+            [ ""; "/opt/homebrew/lib/"; "/opt/local/lib/"; "/usr/local/lib" ] )
+      | "Win32", _ | "Cygwin", _ ->
           ( "SDL2_ttf.dll",
             [
               "";
@@ -100,8 +99,8 @@ module Ttf = struct
               "/mingw32/bin";
             ] )
       | _ ->
-          ( "libSDL2_ttf-2.0.so.0",
-            [ "/usr/lib/x86_64-linux-gnu/"; "/usr/local/lib" ] )
+          ( "libSDL2_ttf.so",
+            [ ""; "/usr/lib/x86_64-linux-gnu/"; "/usr/local/lib" ] )
     in
     let rec loop = function
       | [] -> None
