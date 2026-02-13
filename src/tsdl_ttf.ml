@@ -66,7 +66,7 @@ module Ttf = struct
       Some dir
     with _ -> None
 
-   (* Dynamic loading at runtime solves two issues:
+  (* Dynamic loading at runtime solves two issues:
      + On linux if you want to use #require "tsdl-image"
        in the toplevel, see
        https://github.com/ocamllabs/ocaml-ctypes/issues/70
@@ -88,19 +88,22 @@ module Ttf = struct
       match (Sys.os_type, Build_config.system) with
       | _, "macosx" ->
           ( "libSDL2_ttf.dylib",
-            [ ""; "/opt/homebrew/lib/"; "/opt/local/lib/"; "/usr/local/lib/" ] )
+            [ ""; "/opt/homebrew/lib/"; "/opt/local/lib/"; "/usr/local/lib/" ]
+          )
       | "Win32", _ | "Cygwin", _ ->
-          ( "SDL2_ttf.dll", [
-            "";
-            "/SDL2/SDL2_ttf/x86_64-w64-mingw32/bin";
-            "/usr/x86_64-w64-mingw32/sys-root/mingw/bin";
-            "/usr/i686-w64-mingw32/sys-root/mingw/bin";
-            "/clangarm64/bin";
-            "/clang64/bin";
-            "/clang32/bin";
-            "/ucrt64/bin";
-            "/mingw64/bin";
-            "/mingw32/bin"] )
+          ( "SDL2_ttf.dll",
+            [
+              "";
+              "/SDL2/SDL2_ttf/x86_64-w64-mingw32/bin";
+              "/usr/x86_64-w64-mingw32/sys-root/mingw/bin";
+              "/usr/i686-w64-mingw32/sys-root/mingw/bin";
+              "/clangarm64/bin";
+              "/clang64/bin";
+              "/clang32/bin";
+              "/ucrt64/bin";
+              "/mingw64/bin";
+              "/mingw32/bin";
+            ] )
       | _ ->
           ( "libSDL2_ttf.so",
             [ ""; "/usr/lib/x86_64-linux-gnu/"; "/usr/local/lib" ] )
@@ -318,13 +321,13 @@ module Ttf = struct
     if version >= (2, 0, 18) then
       foreign "TTF_GlyphMetrics32"
         (font
-         @-> glyph_32
-         @-> ptr int
-         @-> ptr int
-         @-> ptr int
-         @-> ptr int
-         @-> ptr int
-         @-> returning int)
+        @-> glyph_32
+        @-> ptr int
+        @-> ptr int
+        @-> ptr int
+        @-> ptr int
+        @-> ptr int
+        @-> returning int)
     else fun _ ->
       failwith "TTF_GlyphMetrics32 not implemented (need SDL_ttf >= 2.0.18)"
 
