@@ -1,15 +1,20 @@
-# current
+# Pending
 
-* add `Ttf.glyph_metrics32`
-* add `Ttf.render_glyph32`*
-* add `Ttf.glyph_is_provided32`, see https://wiki.libsdl.org/SDL2_ttf/TTF_GlyphIsProvided32
+* (@zoggy) add `Ttf.glyph_metrics32`
+* (@jonahbeckford) Allow exact location of `libSDL2_ttf-2.0.so.0` to be set in
+  `LIBSDL2_TTF_SHLIB` for situations where you have a debug shared.
+  library or you don't want `pkg-config` invoked.
+* **WARNING** removed dune configurator because of Windows
+  incompatibilities. If you have trouble compiling, please report an
+  issue on github.
+* (@zoggy) add `Ttf.render_glyph32`*
+* (@zoggy) add `Ttf.glyph_is_provided32`, see https://wiki.libsdl.org/SDL2_ttf/TTF_GlyphIsProvided32
 * Fix DLL lookup for current OPAM+MingW64 installations
 
 # 0.6 2023/08/05 hide startup log
 
 * Use system category to log "Loading Sdl_ttf" message. (We now
   log only for dev versions.)
-
 * Fix typo environment lookup of `LIBSLD2_PATH` to be correct
   `LIBSDL2_PATH`.
 * Locate `SDL2_ttf.dll` on Windows.

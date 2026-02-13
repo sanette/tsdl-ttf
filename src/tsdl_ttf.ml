@@ -5,7 +5,12 @@ open Tsdl
 module Ttf = struct
   type 'a result = 'a Sdl.result
 
-  let debug = false (* set this to false before release *)
+  (* Set [debug] to true to print the foreign symbols in the CI. *)
+  let debug =
+    Sys.getenv_opt "OCAMLCI" = Some "true"
+    || Sys.getenv_opt "TSDL_DEBUG" = Some "true"
+
+  let pre = if debug then print_endline else ignore
   let error () = Error (`Msg (Sdl.get_error ()))
 
   let zero_to_ok =
@@ -65,21 +70,22 @@ module Ttf = struct
      #require "tsdl-ttf"
      in the toplevel, see
      https://github.com/ocamllabs/ocaml-ctypes/issues/70 *)
-  let from : Dl.library option =
+  let perform_search () : Dl.library option =
     (if debug then
        Sdl.(
          log_info Log.category_system "Loading Sdl_ttf, Target = %s"
            Build_config.system));
     let env = try Sys.getenv "LIBSDL2_PATH" with Not_found -> "" in
     let filename, path =
-      match Build_config.system with
-      | "macosx" -> ("libSDL2_ttf-2.0.0.dylib", [ "/opt/homebrew/lib/" ])
-      | "win32" | "win64" ->
-          (* On native Windows DLLs are loaded from the PATH *)
-          ("SDL2_ttf.dll", [ "" ])
-      | "cygwin" | "mingw" | "mingw64" ->
-          (* For Windows POSIX emulators (Cygwin and MSYS2), hardcoded
-             locations are available in addition to the PATH *)
+      (* In principle only the basename is enough because the appropriate PATH
+         is used if SDL2_ttf was installed properly. We provide below more
+         hardcoded paths for non-standard installs where PATH is not correctly
+         set. *)
+      match (Sys.os_type, Build_config.system) with
+      | _, "macosx" ->
+          ( "libSDL2_ttf.dylib",
+            [ ""; "/opt/homebrew/lib/"; "/opt/local/lib/"; "/usr/local/lib" ] )
+      | "Win32", _ | "Cygwin", _ ->
           ( "SDL2_ttf.dll",
             [
               "";
@@ -93,8 +99,8 @@ module Ttf = struct
               "/mingw32/bin";
             ] )
       | _ ->
-          ( "libSDL2_ttf-2.0.so.0",
-            [ "/usr/lib/x86_64-linux-gnu/"; "/usr/local/lib" ] )
+          ( "libSDL2_ttf.so",
+            [ ""; "/usr/lib/x86_64-linux-gnu/"; "/usr/local/lib" ] )
     in
     let rec loop = function
       | [] -> None
@@ -116,25 +122,60 @@ module Ttf = struct
               ("Cannot find " ^ filename ^ ", please set LIBSDL2_PATH");
             None)
 
+  let from : Dl.library option =
+    let shlib = try Sys.getenv "LIBSDL2_TTF_SHLIB" with Not_found -> "" in
+    if shlib = "" then perform_search ()
+    else Some Dl.(dlopen ~filename:shlib ~flags:[ RTLD_NOW ])
+
   let foreign = foreign ?from
-  let init = foreign "TTF_Init" (void @-> returning zero_to_ok)
+
+  let init =
+    pre "TTF_Init";
+    foreign "TTF_Init" (void @-> returning zero_to_ok)
+
+  let version = structure "SDL_version"
+  let version_major = field version "major" uint8_t
+  let version_minor = field version "minor" uint8_t
+  let version_patch = field version "patch" uint8_t
+  let () = seal version
+
+  let linked_version =
+    pre "TTF_Linked_Version";
+    foreign "TTF_Linked_Version" (void @-> returning (ptr version))
+
+  let linked_version () =
+    let get v f = Unsigned.UInt8.to_int (getf v f) in
+    let v = linked_version () in
+    let v = !@v in
+    (get v version_major, get v version_minor, get v version_patch)
+
+  let version = linked_version ()
+
+  let () =
+    if debug then
+      let a, b, c = version in
+      Sdl.log "SDL_ttf Version (%u,%u,%u)" a b c
 
   let open_font =
+    pre "TTF_OpenFont";
     foreign "TTF_OpenFont" (string @-> int @-> returning font_result)
 
   let open_font_index =
+    pre "TTF_OpenFontIndex";
     foreign "TTF_OpenFontIndex"
       (string @-> int @-> int64_as_long @-> returning font_result)
 
   let open_font_rw =
+    pre "TTF_OpenFontRW";
     foreign "TTF_OpenFontRW" (rw_ops @-> int @-> int @-> returning font_result)
 
   let open_font_index_rw =
+    pre "TTF_OpenFontIndexRW";
     foreign "TTF_OpenFontIndexRW"
       (rw_ops @-> int @-> int @-> int64_as_long @-> returning font_result)
 
   (* let byte_swapped_unicode =
-   *   foreign "TTF_ByteSwappedUNICODE" (int @-> returning void) *)
+   *   pre "TTF_ByteSwappedUNICODE"; foreign "TTF_ByteSwappedUNICODE" (int @-> returning void) *)
 
   module Style = struct
     type t = Unsigned.uint32
@@ -151,14 +192,20 @@ module Ttf = struct
     let strikethrough = i 8
   end
 
-  let get_font_style = foreign "TTF_GetFontStyle" (font @-> returning uint32_t)
+  let get_font_style =
+    pre "TTF_GetFontStyle";
+    foreign "TTF_GetFontStyle" (font @-> returning uint32_t)
 
   let set_font_style =
+    pre "TTF_SetFontStyle";
     foreign "TTF_SetFontStyle" (font @-> uint32_t @-> returning void)
 
-  let get_font_outline = foreign "TTF_GetFontOutline" (font @-> returning int)
+  let get_font_outline =
+    pre "TTF_GetFontOutline";
+    foreign "TTF_GetFontOutline" (font @-> returning int)
 
   let set_font_outline =
+    pre "TTF_SetFontOutline";
     foreign "TTF_SetFontOutline" (font @-> int @-> returning void)
 
   module Hinting = struct
@@ -177,29 +224,51 @@ module Ttf = struct
   end
 
   let get_font_hinting =
+    pre "TTF_GetFontHinting";
     foreign "TTF_GetFontHinting" (font @-> returning Hinting.t)
 
   let set_font_hinting =
+    pre "TTF_SetFontHinting";
     foreign "TTF_SetFontHinting" (font @-> Hinting.t @-> returning void)
 
-  let font_height = foreign "TTF_FontHeight" (font @-> returning int)
-  let font_ascent = foreign "TTF_FontAscent" (font @-> returning int)
-  let font_descent = foreign "TTF_FontDescent" (font @-> returning int)
-  let font_line_skip = foreign "TTF_FontLineSkip" (font @-> returning int)
-  let get_font_kerning = foreign "TTF_GetFontKerning" (font @-> returning bool)
+  let font_height =
+    pre "TTF_FontHeight";
+    foreign "TTF_FontHeight" (font @-> returning int)
+
+  let font_ascent =
+    pre "TTF_FontAscent";
+    foreign "TTF_FontAscent" (font @-> returning int)
+
+  let font_descent =
+    pre "TTF_FontDescent";
+    foreign "TTF_FontDescent" (font @-> returning int)
+
+  let font_line_skip =
+    pre "TTF_FontLineSkip";
+    foreign "TTF_FontLineSkip" (font @-> returning int)
+
+  let get_font_kerning =
+    pre "TTF_GetFontKerning";
+    foreign "TTF_GetFontKerning" (font @-> returning bool)
 
   let set_font_kerning =
+    pre "TTF_SetFontKerning";
     foreign "TTF_SetFontKerning" (font @-> bool @-> returning void)
 
-  let font_faces = foreign "TTF_FontFaces" (font @-> returning int64_as_long)
+  let font_faces =
+    pre "TTF_FontFaces";
+    foreign "TTF_FontFaces" (font @-> returning int64_as_long)
 
   let font_face_is_fixed_width =
+    pre "TTF_FontFaceIsFixedWidth";
     foreign "TTF_FontFaceIsFixedWidth" (font @-> returning int)
 
   let font_face_family_name =
+    pre "TTF_FontFaceFamilyName";
     foreign "TTF_FontFaceFamilyName" (font @-> returning string)
 
   let font_face_style_name =
+    pre "TTF_FontFaceStyleName";
     foreign "TTF_FontFaceStyleName" (font @-> returning string)
 
   let glyph_ucs2 =
@@ -209,10 +278,15 @@ module Ttf = struct
     view ~read:Unsigned.UInt32.to_int ~write:Unsigned.UInt32.of_int uint32_t
 
   let glyph_is_provided =
+    pre "TTF_GlyphIsProvided";
     foreign "TTF_GlyphIsProvided" (font @-> glyph_ucs2 @-> returning bool)
 
   let glyph_is_provided32 =
-    foreign "TTF_GlyphIsProvided32" (font @-> glyph_32 @-> returning bool)
+    pre "TTF_GlyphIsProvided32";
+    if version >= (2, 0, 18) then
+      foreign "TTF_GlyphIsProvided32" (font @-> glyph_32 @-> returning bool)
+    else fun _ ->
+      failwith "TTF_GlyphIsProvided32 not implemented (need SDL_ttf >= 2.0.18)"
 
   module GlyphMetrics = struct
     type t = {
@@ -225,6 +299,7 @@ module Ttf = struct
   end
 
   let glyph_metrics =
+    pre "TTF_GlyphMetrics";
     foreign "TTF_GlyphMetrics"
       (font
       @-> glyph_ucs2
@@ -270,6 +345,7 @@ module Ttf = struct
   let glyph_metrics32 = glyph_metrics_ glyph_metrics32
 
   let size_text =
+    pre "TTF_SizeText";
     foreign "TTF_SizeText"
       (font @-> string @-> ptr int @-> ptr int @-> returning int)
 
@@ -278,6 +354,7 @@ module Ttf = struct
     if 0 = size_text f s w h then Ok (!@w, !@h) else error ()
 
   let size_utf8 =
+    pre "TTF_SizeUTF8";
     foreign "TTF_SizeUTF8"
       (font @-> string @-> ptr int @-> ptr int @-> returning int)
 
@@ -286,7 +363,7 @@ module Ttf = struct
     if 0 = size_utf8 f s w h then Ok (!@w, !@h) else error ()
 
   (* let size_unicode =
-   *   foreign "TTF_SizeUNICODE" (font @-> ptr glyph_ucs2 @-> ptr int @-> ptr int @-> returning int) *)
+   *   pre "TTF_SizeUNICODE"; foreign "TTF_SizeUNICODE" (font @-> ptr glyph_ucs2 @-> ptr int @-> ptr int @-> returning int) *)
 
   type _color
   type color = _color structure
@@ -320,49 +397,68 @@ module Ttf = struct
     view ~read ~write color
 
   let render_text_solid =
+    pre "TTF_RenderText_Solid";
     foreign "TTF_RenderText_Solid"
       (font @-> string @-> color @-> returning surface_result)
 
   let render_utf8_solid =
+    pre "TTF_RenderUTF8_Solid";
     foreign "TTF_RenderUTF8_Solid"
       (font @-> string @-> color @-> returning surface_result)
-  (* let render_unicode_solid = foreign "TTF_RenderUNICODE_Solid" (font @-> ptr glyph_ucs2 @-> color @-> returning surface_result) *)
+  (* let render_unicode_solid = pre "TTF_RenderUNICODE_Solid"; foreign "TTF_RenderUNICODE_Solid" (font @-> ptr glyph_ucs2 @-> color @-> returning surface_result) *)
 
   let render_glyph_solid =
+    pre "TTF_RenderGlyph_Solid";
     foreign "TTF_RenderGlyph_Solid"
       (font @-> glyph_ucs2 @-> color @-> returning surface_result)
 
   let render_glyph32_solid =
-    foreign "TTF_RenderGlyph32_Solid"
-      (font @-> glyph_32 @-> color @-> returning surface_result)
+    pre "TTF_RenderGlyph32_Solid";
+    if version >= (2, 0, 18) then
+      foreign "TTF_RenderGlyph32_Solid"
+        (font @-> glyph_32 @-> color @-> returning surface_result)
+    else fun _ ->
+      failwith
+        "TTF_RenderGlyph32_Solid not implemented (need SDL_ttf >= 2.0.18)"
 
   let render_text_shaded =
+    pre "TTF_RenderText_Shaded";
     foreign "TTF_RenderText_Shaded"
       (font @-> string @-> color @-> color @-> returning surface_result)
 
   let render_utf8_shaded =
+    pre "TTF_RenderUTF8_Shaded";
     foreign "TTF_RenderUTF8_Shaded"
       (font @-> string @-> color @-> color @-> returning surface_result)
-  (* let render_unicode_shaded = foreign "TTF_RenderUNICODE_Shaded" (font @-> ptr glyph_ucs2 @-> color @-> color @-> returning surface_result) *)
+  (* let render_unicode_shaded = pre "TTF_RenderUNICODE_Shaded"; foreign "TTF_RenderUNICODE_Shaded" (font @-> ptr glyph_ucs2 @-> color @-> color @-> returning surface_result) *)
 
   let render_glyph_shaded =
+    pre "TTF_RenderGlyph_Shaded";
     foreign "TTF_RenderGlyph_Shaded"
       (font @-> glyph_ucs2 @-> color @-> color @-> returning surface_result)
 
   let render_glyph32_shaded =
-    foreign "TTF_RenderGlyph32_Shaded"
-      (font @-> glyph_32 @-> color @-> color @-> returning surface_result)
+    pre "TTF_RenderGlyph32_Shaded";
+    if version >= (2, 0, 18) then
+      foreign "TTF_RenderGlyph32_Shaded"
+        (font @-> glyph_32 @-> color @-> color @-> returning surface_result)
+    else fun _ ->
+      failwith
+        "TTF_RenderGlyph32_Shaded not implemented (need SDL_ttf >= 2.0.18)"
 
   let render_text_blended =
+    pre "TTF_RenderText_Blended";
     foreign "TTF_RenderText_Blended"
       (font @-> string @-> color @-> returning surface_result)
 
   let render_utf8_blended =
+    pre "TTF_RenderUTF8_Blended";
     foreign "TTF_RenderUTF8_Blended"
       (font @-> string @-> color @-> returning surface_result)
-  (* let render_unicode_blended = foreign "TTF_RenderUNICODE_Blended" (font @-> ptr glyph_ucs2 @-> color @-> returning surface_result) *)
+  (* let render_unicode_blended = pre "TTF_RenderUNICODE_Blended"; foreign "TTF_RenderUNICODE_Blended" (font @-> ptr glyph_ucs2 @-> color @-> returning surface_result) *)
 
   let render_text_blended_wrapped =
+    pre "TTF_RenderText_Blended_Wrapped";
     foreign "TTF_RenderText_Blended_Wrapped"
       (font
       @-> string
@@ -371,26 +467,42 @@ module Ttf = struct
       @-> returning surface_result)
 
   let render_utf8_blended_wrapped =
+    pre "TTF_RenderUTF8_Blended_Wrapped";
     foreign "TTF_RenderUTF8_Blended_Wrapped"
       (font
       @-> string
       @-> color
       @-> int32_as_uint32_t
       @-> returning surface_result)
-  (* let render_unicode_blended_wrapped = foreign "TTF_RenderUNICODE_Blended_Wrapped" (font @-> ptr glyph_ucs2 @-> color @-> int32_as_uint32_t @-> returning surface_result) *)
+  (* let render_unicode_blended_wrapped = pre "TTF_RenderUNICODE_Blended_Wrapped"; foreign "TTF_RenderUNICODE_Blended_Wrapped" (font @-> ptr glyph_ucs2 @-> color @-> int32_as_uint32_t @-> returning surface_result) *)
 
   let render_glyph_blended =
+    pre "TTF_RenderGlyph_Blended";
     foreign "TTF_RenderGlyph_Blended"
       (font @-> glyph_ucs2 @-> color @-> returning surface_result)
 
   let render_glyph32_blended =
-    foreign "TTF_RenderGlyph32_Blended"
-      (font @-> glyph_32 @-> color @-> returning surface_result)
+    pre "TTF_RenderGlyph32_Blended";
+    if version >= (2, 0, 18) then
+      foreign "TTF_RenderGlyph32_Blended"
+        (font @-> glyph_32 @-> color @-> returning surface_result)
+    else fun _ ->
+      failwith
+        "TTF_RenderGlyph32_Blended not implemented (need SDL_ttf >= 2.0.18)"
 
-  let close_font = foreign "TTF_CloseFont" (font @-> returning void)
-  let quit = foreign "TTF_Quit" (void @-> returning void)
-  let was_init = foreign "TTF_WasInit" (void @-> returning bool)
+  let close_font =
+    pre "TTF_CloseFont";
+    foreign "TTF_CloseFont" (font @-> returning void)
+
+  let quit =
+    pre "TTF_Quit";
+    foreign "TTF_Quit" (void @-> returning void)
+
+  let was_init =
+    pre "TTF_WasInit";
+    foreign "TTF_WasInit" (void @-> returning bool)
 
   let get_font_kerning_size =
+    pre "TTF_GetFontKerningSize";
     foreign "TTF_GetFontKerningSize" (font @-> int @-> int @-> returning int)
 end
