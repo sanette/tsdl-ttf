@@ -1,5 +1,8 @@
 # Pending
 
+* Allow exact location of `libSDL2_ttf-2.0.so.0` to be set in
+  `LIBSDL2_TTF_SHLIB` for situations where you have a debug shared
+  library or you don't want `pkg-config` invoked.
 * **WARNING** removed dune configurator because of Windows
   incompatibilities. If you have trouble compiling, please report an
   issue on github.

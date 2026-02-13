@@ -70,7 +70,7 @@ module Ttf = struct
      #require "tsdl-ttf"
      in the toplevel, see
      https://github.com/ocamllabs/ocaml-ctypes/issues/70 *)
-  let from : Dl.library option =
+  let perform_search () : Dl.library option =
     (if debug then
        Sdl.(
          log_info Log.category_system "Loading Sdl_ttf, Target = %s"
@@ -121,6 +121,11 @@ module Ttf = struct
             print_endline
               ("Cannot find " ^ filename ^ ", please set LIBSDL2_PATH");
             None)
+
+  let from : Dl.library option =
+    let shlib = try Sys.getenv "LIBSDL2_TTF_SHLIB" with Not_found -> "" in
+    if shlib = "" then perform_search ()
+    else Some Dl.(dlopen ~filename:shlib ~flags:[ RTLD_NOW ])
 
   let foreign = foreign ?from
 
