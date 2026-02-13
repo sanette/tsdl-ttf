@@ -75,6 +75,7 @@ module Ttf : sig
   end
 
   val glyph_metrics : font -> int -> GlyphMetrics.t result
+  val glyph_metrics32 : font -> int -> GlyphMetrics.t result
   val size_text : font -> string -> (int * int) result
   val size_utf8 : font -> string -> (int * int) result
 

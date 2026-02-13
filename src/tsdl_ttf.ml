@@ -310,7 +310,18 @@ module Ttf = struct
       @-> ptr int
       @-> returning int)
 
-  let glyph_metrics f g =
+  let glyph_metrics32 =
+    foreign "TTF_GlyphMetrics32"
+      (font
+      @-> glyph_32
+      @-> ptr int
+      @-> ptr int
+      @-> ptr int
+      @-> ptr int
+      @-> ptr int
+      @-> returning int)
+
+  let glyph_metrics_ gm f g =
     let min_x, max_x, min_y, max_y, advance =
       ( allocate int 0,
         allocate int 0,
@@ -318,7 +329,7 @@ module Ttf = struct
         allocate int 0,
         allocate int 0 )
     in
-    if 0 = glyph_metrics f g min_x max_x min_y max_y advance then
+    if 0 = gm f g min_x max_x min_y max_y advance then
       Ok
         GlyphMetrics.
           {
@@ -329,6 +340,9 @@ module Ttf = struct
             advance = !@advance;
           }
     else error ()
+
+  let glyph_metrics = glyph_metrics_ glyph_metrics
+  let glyph_metrics32 = glyph_metrics_ glyph_metrics32
 
   let size_text =
     pre "TTF_SizeText";
