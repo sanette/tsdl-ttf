@@ -8,13 +8,14 @@
 
     - {{:https://github.com/sanette/tsdl-ttf} source on github}
 
-    - {{:https://wiki.libsdl.org/SDL_ttf/CategoryAPI} SDL_ttf API} *)
+    - {{:https://wiki.libsdl.org/SDL2_ttf/} SDL_ttf API} *)
 module Ttf : sig
   type 'a result = 'a Tsdl.Sdl.result
 
   val init : unit -> unit result
   val quit : unit -> unit
   val was_init : unit -> bool
+  val linked_version : unit -> int * int * int
 
   type font
 
@@ -61,6 +62,7 @@ module Ttf : sig
   val font_face_family_name : font -> string
   val font_face_style_name : font -> string
   val glyph_is_provided : font -> int -> bool
+  val glyph_is_provided32 : font -> int -> bool
 
   module GlyphMetrics : sig
     type t = {
@@ -85,6 +87,9 @@ module Ttf : sig
   val render_glyph_solid :
     font -> int -> Tsdl.Sdl.color -> Tsdl.Sdl.surface result
 
+  val render_glyph32_solid :
+    font -> int -> Tsdl.Sdl.color -> Tsdl.Sdl.surface result
+
   val render_text_shaded :
     font ->
     string ->
@@ -102,6 +107,9 @@ module Ttf : sig
   val render_glyph_shaded :
     font -> int -> Tsdl.Sdl.color -> Tsdl.Sdl.color -> Tsdl.Sdl.surface result
 
+  val render_glyph32_shaded :
+    font -> int -> Tsdl.Sdl.color -> Tsdl.Sdl.color -> Tsdl.Sdl.surface result
+
   val render_text_blended :
     font -> string -> Tsdl.Sdl.color -> Tsdl.Sdl.surface result
 
@@ -115,5 +123,8 @@ module Ttf : sig
     font -> string -> Tsdl.Sdl.color -> int32 -> Tsdl.Sdl.surface result
 
   val render_glyph_blended :
+    font -> int -> Tsdl.Sdl.color -> Tsdl.Sdl.surface result
+
+  val render_glyph32_blended :
     font -> int -> Tsdl.Sdl.color -> Tsdl.Sdl.surface result
 end

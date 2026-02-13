@@ -1,10 +1,8 @@
-tsdl-image — SDL2\_ttf bindings for OCaml with Tsdl
+tsdl-ttf — SDL2\_ttf bindings for OCaml with Tsdl
 ---------------------------------------------------
 
-*WARNING*: These bindings are subject to change.
-
 Tsdl\_ttf provides bindings to
-[SDL2_ttf](https://wiki.libsdl.org/SDL_ttf/) intended to
+[SDL2_ttf](https://wiki.libsdl.org/SDL2_ttf/) intended to
 be used with [Tsdl](http://erratique.ch/software/tsdl).
 
 It has as siblings [tsdl-image](https://github.com/sanette/tsdl-image)
@@ -21,6 +19,27 @@ Via [opam](https://opam.ocaml.org/):
 
     opam install tsdl-ttf
 
+or, to get the latest version:
+
+	opam pin https://github.com/sanette/tsdl-ttf
+
+## Tested on Linux, MacOS, Windows (mingw64)
+
+Should work for any version of SDL2\_ttf >= 2.0.14.
+
+On Windows, before installing, you may need to select this `tsdl` version:
+
+	opam pin https://github.com/sanette/tsdl
+
+## Example
+
+See [test/test.ml](https://github.com/sanette/tsdl-ttf/blob/master/test/show_string.ml)
+
+	cd test
+	dune exec ./show_string.exe
+
+![Hello](https://github.com/sanette/tsdl-ttf/blob/master/test/hello_ocaml.png)
+
 ## Documentation
 
 Documentation is
@@ -28,7 +47,7 @@ Documentation is
 generated with `dune build @doc`, (or `./make_doc.sh`) but the binding
 follows the SDL2_ttf interface closely, so it may be sufficient to
 consult
-[its documentation](https://wiki.libsdl.org/SDL_ttf/).
+[its documentation](https://wiki.libsdl.org/SDL2_ttf).
 
 Starting from version 0.3, the library is usable in a toplevel (with
 `#require "tsdl-ttf"`).
@@ -40,5 +59,8 @@ name `tsdl-ttf`. (The library name used to be `tsdl_ttf`, which
 was confusing).
 
 ## CI
+
+(This CI uses the official `tsdl`. For Windows with the modified
+`tsdl`, see the Github actions.)
 
 https://ci.ocamllabs.io/github/sanette/tsdl-ttf
