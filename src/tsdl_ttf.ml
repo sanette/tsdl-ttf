@@ -66,10 +66,14 @@ module Ttf = struct
       Some dir
     with _ -> None
 
-  (* This "hack" seems to be necessary for linux if you want to use
-     #require "tsdl-ttf"
-     in the toplevel, see
-     https://github.com/ocamllabs/ocaml-ctypes/issues/70 *)
+   (* Dynamic loading at runtime solves two issues:
+     + On linux if you want to use #require "tsdl-image"
+       in the toplevel, see
+       https://github.com/ocamllabs/ocaml-ctypes/issues/70
+     + On Windows, linking with pkg-config flags raises the issue
+       of the wrong flags "-mwindows" "SDLMain", see
+       https://github.com/ocaml/flexdll/issues/163#issuecomment-3732220603
+  *)
   let perform_search () : Dl.library option =
     (if debug then
        Sdl.(
@@ -84,20 +88,19 @@ module Ttf = struct
       match (Sys.os_type, Build_config.system) with
       | _, "macosx" ->
           ( "libSDL2_ttf.dylib",
-            [ ""; "/opt/homebrew/lib/"; "/opt/local/lib/"; "/usr/local/lib" ] )
+            [ ""; "/opt/homebrew/lib/"; "/opt/local/lib/"; "/usr/local/lib/" ] )
       | "Win32", _ | "Cygwin", _ ->
-          ( "SDL2_ttf.dll",
-            [
-              "";
-              "/usr/x86_64-w64-mingw32/sys-root/mingw/bin";
-              "/usr/i686-w64-mingw32/sys-root/mingw/bin";
-              "/clangarm64/bin";
-              "/clang64/bin";
-              "/clang32/bin";
-              "/ucrt64/bin";
-              "/mingw64/bin";
-              "/mingw32/bin";
-            ] )
+          ( "SDL2_ttf.dll", [
+            "";
+            "/SDL2/SDL2_ttf/x86_64-w64-mingw32/bin";
+            "/usr/x86_64-w64-mingw32/sys-root/mingw/bin";
+            "/usr/i686-w64-mingw32/sys-root/mingw/bin";
+            "/clangarm64/bin";
+            "/clang64/bin";
+            "/clang32/bin";
+            "/ucrt64/bin";
+            "/mingw64/bin";
+            "/mingw32/bin"] )
       | _ ->
           ( "libSDL2_ttf.so",
             [ ""; "/usr/lib/x86_64-linux-gnu/"; "/usr/local/lib" ] )
@@ -311,15 +314,19 @@ module Ttf = struct
       @-> returning int)
 
   let glyph_metrics32 =
-    foreign "TTF_GlyphMetrics32"
-      (font
-      @-> glyph_32
-      @-> ptr int
-      @-> ptr int
-      @-> ptr int
-      @-> ptr int
-      @-> ptr int
-      @-> returning int)
+    pre "TTF_GlyphMetrics32";
+    if version >= (2, 0, 18) then
+      foreign "TTF_GlyphMetrics32"
+        (font
+         @-> glyph_32
+         @-> ptr int
+         @-> ptr int
+         @-> ptr int
+         @-> ptr int
+         @-> ptr int
+         @-> returning int)
+    else fun _ ->
+      failwith "TTF_GlyphMetrics32 not implemented (need SDL_ttf >= 2.0.18)"
 
   let glyph_metrics_ gm f g =
     let min_x, max_x, min_y, max_y, advance =

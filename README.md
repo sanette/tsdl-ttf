@@ -25,7 +25,9 @@ or, to get the latest version:
 
 ## Tested on Linux, MacOS, Windows (mingw64)
 
-Should work for any version of SDL2\_ttf >= 2.0.14.
+These bindings use dynamic loading of the SDL2\_ttf library at runtime.
+
+They should work for any version of SDL2\_ttf >= 2.0.14.
 
 On Windows, before installing, you may need to select this `tsdl` version:
 
