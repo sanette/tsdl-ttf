@@ -110,7 +110,7 @@ module Ttf = struct
             [ ""; "/usr/lib/x86_64-linux-gnu"; "/usr/local/lib" ] )
     in
     let rec loop = function
-      | [] -> None
+      | [] -> pre (filename ^ " not found..."); None
       | dir :: rest -> (
           let filename =
             if dir = "" then filename else Filename.concat dir filename
