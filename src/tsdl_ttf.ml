@@ -9,6 +9,7 @@ module Ttf = struct
   let debug =
     Sys.getenv_opt "OCAMLCI" = Some "true"
     || Sys.getenv_opt "TSDL_DEBUG" = Some "true"
+    || Sys.getenv_opt "OPAM_REPO_CI" = Some "true"
 
   let pre = if debug then print_endline else ignore
   let error () = Error (`Msg (Sdl.get_error ()))
@@ -88,7 +89,7 @@ module Ttf = struct
       match (Sys.os_type, Build_config.system) with
       | _, "macosx" ->
           ( "libSDL2_ttf.dylib",
-            [ ""; "/opt/homebrew/lib/"; "/opt/local/lib/"; "/usr/local/lib/" ]
+            [ ""; "/opt/homebrew/lib"; "/opt/local/lib"; "/usr/local/lib" ]
           )
       | "Win32", _ | "Cygwin", _ ->
           ( "SDL2_ttf.dll",
@@ -106,7 +107,7 @@ module Ttf = struct
             ] )
       | _ ->
           ( "libSDL2_ttf.so",
-            [ ""; "/usr/lib/x86_64-linux-gnu/"; "/usr/local/lib" ] )
+            [ ""; "/usr/lib/x86_64-linux-gnu"; "/usr/local/lib" ] )
     in
     let rec loop = function
       | [] -> None
@@ -114,6 +115,7 @@ module Ttf = struct
           let filename =
             if dir = "" then filename else Filename.concat dir filename
           in
+          pre ("Trying " ^ filename);
           try Some Dl.(dlopen ~filename ~flags:[ RTLD_NOW ])
           with _ -> loop rest)
     in
