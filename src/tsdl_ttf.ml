@@ -106,7 +106,7 @@ module Ttf = struct
               "/mingw32/bin";
             ] )
       | _ ->
-          ( "ibSDL2_ttf-2.0.so", (* JUST FOR TRY "libSDL2_ttf.so", *)
+          ( "libSDL2_ttf-2.0.so", (* JUST FOR TRY "libSDL2_ttf.so", *)
             [ ""; "/usr/lib/x86_64-linux-gnu"; "/usr/local/lib" ] )
     in
     let rec loop = function
