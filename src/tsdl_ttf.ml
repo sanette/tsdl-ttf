@@ -89,8 +89,7 @@ module Ttf = struct
       match (Sys.os_type, Build_config.system) with
       | _, "macosx" ->
           ( "libSDL2_ttf.dylib",
-            [ ""; "/opt/homebrew/lib"; "/opt/local/lib"; "/usr/local/lib" ]
-          )
+            [ ""; "/opt/homebrew/lib"; "/opt/local/lib"; "/usr/local/lib" ] )
       | "Win32", _ | "Cygwin", _ ->
           ( "SDL2_ttf.dll",
             [
@@ -106,18 +105,22 @@ module Ttf = struct
               "/mingw32/bin";
             ] )
       | _ ->
-          ( "libSDL2_ttf.so", (* JUST FOR TRY "libSDL2_ttf.so", *)
+          ( "libSDL2_ttf.so",
             [ ""; "/usr/lib/x86_64-linux-gnu"; "/usr/local/lib" ] )
     in
     let rec loop = function
-      | [] -> pre (filename ^ " not found..."); None
+      | [] ->
+          pre (filename ^ " not found...");
+          None
       | dir :: rest -> (
           let filename =
             if dir = "" then filename else Filename.concat dir filename
           in
           pre ("Trying " ^ filename);
           try Some Dl.(dlopen ~filename ~flags:[ RTLD_NOW ])
-          with _ -> pre "not found."; loop rest)
+          with _ ->
+            pre "not found.";
+            loop rest)
     in
     match loop (if List.mem env path then path else env :: path) with
     | Some f -> Some f
