@@ -1,4 +1,4 @@
-# Pending
+# 0.7 2026/04/04
 
 * (@zoggy) add `Ttf.glyph_metrics32`
 * (@jonahbeckford) Allow exact location of `libSDL2_ttf-2.0.so.0` to be set in
