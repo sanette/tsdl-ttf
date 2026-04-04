@@ -117,7 +117,7 @@ module Ttf = struct
           in
           pre ("Trying " ^ filename);
           try Some Dl.(dlopen ~filename ~flags:[ RTLD_NOW ])
-          with _ -> loop rest)
+          with _ -> pre "not found."; loop rest)
     in
     match loop (if List.mem env path then path else env :: path) with
     | Some f -> Some f
