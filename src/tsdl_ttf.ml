@@ -119,10 +119,11 @@ module Ttf = struct
           try Some Dl.(dlopen ~filename ~flags:[ RTLD_NOW ])
           with _ -> loop rest)
     in
-    match loop (env :: path) with
+    match loop (if List.mem env path then path else env :: path) with
     | Some f -> Some f
     | None -> (
         (* We execute pkg_config only if everything else failed. *)
+        pre "Calling pkg_config";
         match pkg_config () with
         | Some dir -> loop [ dir ]
         | None ->
