@@ -78,9 +78,8 @@ module Ttf = struct
       let dir = command_print "pkg-config --variable=libdir SDL2_ttf" in
       let _ = command_print "pkg info sdl2_ttf" in
       let _ = command_print "ls -l /usr/local/lib | grep SDL" in
-      let _ = command_print "ls -l /usr/local/lib | grep SDL" in
       let _ = command_print "pkg info -l sdl2_ttf" in
-      let _ = command_print "pkg info -l sdl2_ttf" in
+      let _ = command_print "ldd /usr/local/lib/libSDL2_ttf.so" in
 
       Some dir
     with _ -> None
