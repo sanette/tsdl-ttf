@@ -57,28 +57,30 @@ module Ttf = struct
     and write = function Error _ -> None | Ok s -> Some s in
     view ~read ~write font_opt
 
+  let command_print cmd =
+    print_endline ("$ " ^ cmd);
+    let ic = Unix.open_process_in cmd in
+    let rec loop res =
+      try
+        let s = input_line ic in
+        print_endline s;
+        loop (if res = "(Empty)" then s else res ^ "\n" ^ s)
+      with _ -> if res = "(Empty)" then "" else res
+    in
+    let res = loop "(Empty)" in
+    close_in ic;
+    res
+
   (* pkg-config --variable=libdir SDL2_ttf *)
   (* Use Configurator.V1.Pkg_config instead? *)
   let pkg_config () =
     try
-      let ic = Unix.open_process_in "pkg-config --variable=libdir SDL2_ttf" in
-      let dir = input_line ic in
-      close_in ic;
-      let ic = Unix.open_process_in "pkg info sdl2_ttf" in
-      let res = input_line ic in
-      close_in ic;
-      print_endline "pkg info sdl2_ttf";
-      print_endline res;
-      let ic = Unix.open_process_in "ls -l /usr/local/lib | grep SDL" in
-      let res = input_line ic in
-      close_in ic;
-      print_endline "ls -l /usr/local/lib | grep SDL";
-      print_endline res;
-      let ic = Unix.open_process_in "pkg info -l sdl2_ttf" in
-      let res = input_line ic in
-      close_in ic;
-      print_endline "pkg info -l sdl2_ttf";
-      print_endline res;
+      let dir = command_print "pkg-config --variable=libdir SDL2_ttf" in
+      let _ = command_print "pkg info sdl2_ttf" in
+      let _ = command_print "ls -l /usr/local/lib | grep SDL" in
+      let _ = command_print "ls -l /usr/local/lib | grep SDL" in
+      let _ = command_print "pkg info -l sdl2_ttf" in
+      let _ = command_print "pkg info -l sdl2_ttf" in
 
       Some dir
     with _ -> None
