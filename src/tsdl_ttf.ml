@@ -64,6 +64,10 @@ module Ttf = struct
       let ic = Unix.open_process_in "pkg-config --variable=libdir SDL2_ttf" in
       let dir = input_line ic in
       close_in ic;
+      let ic = Unix.open_process_in "sdl2-config --static-libs" in
+      let res = input_line ic in
+      close_in ic;
+      print_endline res;
       Some dir
     with _ -> None
 
