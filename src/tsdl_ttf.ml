@@ -61,6 +61,7 @@ module Ttf = struct
   (* Use Configurator.V1.Pkg_config instead? *)
   let pkg_config () =
     try
+      Unix.sleep 5;
       let ic = Unix.open_process_in "pkg-config --variable=libdir SDL2_ttf" in
       let dir = input_line ic in
       close_in ic;
