@@ -105,38 +105,40 @@ module Ttf = struct
          set. *)
       match (Sys.os_type, Build_config.system) with
       | _, "macosx" ->
-          ( "libSDL2_ttf.dylib",
-            [ ""; "/opt/homebrew/lib"; "/opt/local/lib"; "/usr/local/lib" ] )
+        ( "libSDL2_ttf.dylib",
+          [ ""; "/opt/homebrew/lib"; "/opt/local/lib"; "/usr/local/lib" ] )
       | "Win32", _ | "Cygwin", _ ->
-          ( "SDL2_ttf.dll",
-            [
-              "";
-              "/SDL2/SDL2_ttf/x86_64-w64-mingw32/bin";
-              "/usr/x86_64-w64-mingw32/sys-root/mingw/bin";
-              "/usr/i686-w64-mingw32/sys-root/mingw/bin";
-              "/clangarm64/bin";
-              "/clang64/bin";
-              "/clang32/bin";
-              "/ucrt64/bin";
-              "/mingw64/bin";
-              "/mingw32/bin";
-            ] )
+        ( "SDL2_ttf.dll",
+          [
+            "";
+            "/SDL2/SDL2_ttf/x86_64-w64-mingw32/bin";
+            "/usr/x86_64-w64-mingw32/sys-root/mingw/bin";
+            "/usr/i686-w64-mingw32/sys-root/mingw/bin";
+            "/clangarm64/bin";
+            "/clang64/bin";
+            "/clang32/bin";
+            "/ucrt64/bin";
+            "/mingw64/bin";
+            "/mingw32/bin";
+          ] )
       | _ ->
-          ( "libSDL2_ttf.so",
-            [ ""; "/usr/lib/x86_64-linux-gnu"; "/usr/local/lib" ] )
+        ( "libSDL2_ttf.so",
+          [ ""; "/usr/lib/x86_64-linux-gnu"; "/usr/local/lib" ] )
     in
     let rec loop = function
       | [] ->
-          pre (filename ^ " not found...");
-          None
+        pre (filename ^ " not found...");
+        None
       | dir :: rest -> (
           let filename =
             if dir = "" then filename else Filename.concat dir filename
           in
           pre ("Trying " ^ filename);
           try Some Dl.(dlopen ~filename ~flags:[ RTLD_NOW ])
-          with _ ->
-            pre "not found.";
+          with e ->
+            if dir <> "" && Sys.file_exists filename
+            then raise e
+            else pre "not found.";
             loop rest)
     in
     match loop (if List.mem env path then path else env :: path) with
@@ -147,9 +149,9 @@ module Ttf = struct
         match pkg_config () with
         | Some dir -> loop [ dir ]
         | None ->
-            print_endline
-              ("Cannot find " ^ filename ^ ", please set LIBSDL2_PATH");
-            None)
+          print_endline
+            ("Cannot find " ^ filename ^ ", please set LIBSDL2_PATH");
+          None)
 
   let from : Dl.library option =
     let shlib = try Sys.getenv "LIBSDL2_TTF_SHLIB" with Not_found -> "" in
