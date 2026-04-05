@@ -68,7 +68,14 @@ module Ttf = struct
       let ic = Unix.open_process_in "pkg info sdl2_ttf" in
       let res = input_line ic in
       close_in ic;
+      print_endline "pkg info sdl2_ttf";
       print_endline res;
+      let ic = Unix.open_process_in "ls -l /usr/local/lib | grep SDL" in
+      let res = input_line ic in
+      close_in ic;
+      print_endline "ls -l /usr/local/lib | grep SDL";
+      print_endline res;
+
       Some dir
     with _ -> None
 
