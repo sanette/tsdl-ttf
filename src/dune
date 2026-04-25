@@ -1,13 +1,4 @@
 (library
  (name tsdl_ttf)
  (public_name tsdl-ttf)
- (modules tsdl_ttf build_config)
- (private_modules build_config)
  (libraries tsdl))
-
-(rule
- (target build_config.ml)
- (action
-  (with-stdout-to
-   %{target}
-   (echo "let system = \"%{system}\""))))

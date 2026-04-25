@@ -1,3 +1,7 @@
+# pending
+
+* Use `Dynlib`
+
 # 0.7 2026/04/04
 
 * (@zoggy) add `Ttf.glyph_metrics32`
