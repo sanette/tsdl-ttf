@@ -2,3 +2,10 @@
  (name tsdl_ttf)
  (public_name tsdl-ttf)
  (libraries tsdl))
+
+(rule
+ (targets sdl2_ttf_config.ml)
+ (action
+  (with-stdout-to
+   %{targets}
+   (run ./config/discover.exe))))
