@@ -75,10 +75,14 @@ let compile_and_run c conf =
   let is_windows = Sys.os_type = "Win32" in
   let devnull = if is_windows then "nul" else "/dev/null" in
   let c_file = Filename.temp_file "discover" ".c" in
-  let exe_file = Filename.temp_file "discover" (if is_windows then ".exe" else "") in
+  let exe_file =
+    Filename.temp_file "discover" (if is_windows then ".exe" else "")
+  in
   let out_file = Filename.temp_file "discover_out" ".txt" in
   let cleanup () =
-    List.iter (fun f -> try Sys.remove f with _ -> ()) [ c_file; exe_file; out_file ]
+    List.iter
+      (fun f -> try Sys.remove f with _ -> ())
+      [ c_file; exe_file; out_file ]
   in
   let oc = open_out c_file in
   output_string oc c_source;
@@ -92,12 +96,14 @@ let compile_and_run c conf =
       devnull
   in
   let run_cmd = Printf.sprintf "%s > %s 2>%s" exe_file out_file devnull in
-  let success =
-    Sys.command compile_cmd = 0 && Sys.command run_cmd = 0
-  in
+  let success = Sys.command compile_cmd = 0 && Sys.command run_cmd = 0 in
   if success then begin
     let ic = open_in out_file in
-    (try while true do print_char (input_char ic) done with End_of_file -> ());
+    (try
+       while true do
+         print_char (input_char ic)
+       done
+     with End_of_file -> ());
     close_in ic
   end;
   cleanup ();
