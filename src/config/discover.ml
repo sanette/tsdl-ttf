@@ -29,6 +29,17 @@ static const char *find_sdl2_ttf_path(void)
         return info.dli_fname;
     return NULL;
 }
+#elif defined(_WIN32)
+#include <windows.h>
+
+static const char *find_sdl2_ttf_path(void)
+{
+    static char path[MAX_PATH];
+    HMODULE h = GetModuleHandle("SDL2_ttf.dll");
+    if (h && GetModuleFileName(h, path, MAX_PATH))
+        return path;
+    return NULL;
+}
 #else
 static const char *find_sdl2_ttf_path(void) { return NULL; }
 #endif
@@ -49,6 +60,11 @@ int main(void)
 let none_module () =
   print_string "let library_path = None\nlet version = None\n"
 
+(* Note: this uses GCC-style compiler invocation (-o, -l flags) and sh-style
+   shell redirection (2>/dev/null). This works with GCC, Clang, and MinGW on
+   Windows, but not with MSVC (cl.exe), which uses different flag syntax
+   (/Fe: for output, .lib suffixes for libraries) and cmd.exe redirection.
+   MSVC is not supported here; the probe will fail gracefully and return None. *)
 let compile_and_run c conf =
   let cc = Option.value ~default:"cc" (C.ocaml_config_var c "c_compiler") in
   let extra_link_flags =
@@ -56,8 +72,10 @@ let compile_and_run c conf =
     | Some "macosx" -> []
     | _ -> [ "-ldl" ]
   in
+  let is_windows = Sys.os_type = "Win32" in
+  let devnull = if is_windows then "nul" else "/dev/null" in
   let c_file = Filename.temp_file "discover" ".c" in
-  let exe_file = Filename.temp_file "discover" "" in
+  let exe_file = Filename.temp_file "discover" (if is_windows then ".exe" else "") in
   let out_file = Filename.temp_file "discover_out" ".txt" in
   let cleanup () =
     List.iter (fun f -> try Sys.remove f with _ -> ()) [ c_file; exe_file; out_file ]
@@ -66,13 +84,14 @@ let compile_and_run c conf =
   output_string oc c_source;
   close_out oc;
   let compile_cmd =
-    Printf.sprintf "%s %s %s -o %s %s %s 2>/dev/null" cc
+    Printf.sprintf "%s %s %s -o %s %s %s 2>%s" cc
       (String.concat " " conf.C.Pkg_config.cflags)
       c_file exe_file
       (String.concat " " conf.C.Pkg_config.libs)
       (String.concat " " extra_link_flags)
+      devnull
   in
-  let run_cmd = Printf.sprintf "%s > %s 2>/dev/null" exe_file out_file in
+  let run_cmd = Printf.sprintf "%s > %s 2>%s" exe_file out_file devnull in
   let success =
     Sys.command compile_cmd = 0 && Sys.command run_cmd = 0
   in
