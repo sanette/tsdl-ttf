@@ -94,6 +94,12 @@ module Ttf = struct
     in
     Option.to_list Sdl2_ttf_config.library_path @ platform_candidates
 
+  let () =
+    if debug then
+      Option.iter
+        (fun s -> print_endline ("Library path detected at build time: " ^ s))
+        Sdl2_ttf_config.library_path
+
   let lib_sdl2 =
     Dynlib.load
       ~env:[ "SDL2_TTF_LIBRARY"; "LIBSDL2_TTF_SHLIB" ]
