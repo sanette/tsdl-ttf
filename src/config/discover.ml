@@ -2,6 +2,7 @@ module C = Configurator.V1
 
 let c_source =
   {|
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <SDL2/SDL_ttf.h>
 
@@ -20,14 +21,23 @@ static const char *find_sdl2_ttf_path(void)
     return NULL;
 }
 #elif defined(__unix__)
-#include <dlfcn.h>
+#include <link.h>
+#include <string.h>
+
+static int find_sdl2_ttf_cb(struct dl_phdr_info *info, size_t size, void *data)
+{
+    if (strstr(info->dlpi_name, "SDL2_ttf")) {
+        *(const char **)data = info->dlpi_name;
+        return 1;
+    }
+    return 0;
+}
 
 static const char *find_sdl2_ttf_path(void)
 {
-    Dl_info info;
-    if (dladdr((void *)TTF_Init, &info) && info.dli_fname)
-        return info.dli_fname;
-    return NULL;
+    const char *path = NULL;
+    dl_iterate_phdr(find_sdl2_ttf_cb, &path);
+    return path;
 }
 #elif defined(_WIN32)
 #include <windows.h>
@@ -46,13 +56,13 @@ static const char *find_sdl2_ttf_path(void) { return NULL; }
 
 int main(void)
 {
+    const SDL_version *v = TTF_Linked_Version();
     const char *path = find_sdl2_ttf_path();
     if (path)
         printf("let library_path = Some \"%s\"\n", path);
     else
         printf("let library_path = None\n");
-    printf("let version = Some (%d, %d, %d)\n",
-           SDL_TTF_MAJOR_VERSION, SDL_TTF_MINOR_VERSION, SDL_TTF_PATCHLEVEL);
+    printf("let version = Some (%d, %d, %d)\n", v->major, v->minor, v->patch);
     return 0;
 }
 |}
@@ -67,11 +77,6 @@ let none_module () =
    MSVC is not supported here; the probe will fail gracefully and return None. *)
 let compile_and_run c conf =
   let cc = Option.value ~default:"cc" (C.ocaml_config_var c "c_compiler") in
-  let extra_link_flags =
-    match C.ocaml_config_var c "system" with
-    | Some "macosx" -> []
-    | _ -> [ "-ldl" ]
-  in
   let is_windows = Sys.os_type = "Win32" in
   let devnull = if is_windows then "nul" else "/dev/null" in
   let c_file = Filename.temp_file "discover" ".c" in
@@ -88,23 +93,26 @@ let compile_and_run c conf =
   output_string oc c_source;
   close_out oc;
   let compile_cmd =
-    Printf.sprintf "%s %s %s -o %s %s %s 2>%s" cc
+    Printf.sprintf "%s %s %s -o %s %s 2>%s" cc
       (String.concat " " conf.C.Pkg_config.cflags)
       c_file exe_file
       (String.concat " " conf.C.Pkg_config.libs)
-      (String.concat " " extra_link_flags)
       devnull
   in
-  let run_cmd = Printf.sprintf "%s > %s 2>%s" exe_file out_file devnull in
-  let success = Sys.command compile_cmd = 0 && Sys.command run_cmd = 0 in
+  let run_cmd = Printf.sprintf "%s > %s" exe_file out_file in
+  let compile_ok = Sys.command compile_cmd = 0 in
+  if not compile_ok then
+    prerr_endline ("sdl2-ttf-discover: probe compilation failed: " ^ compile_cmd);
+  let run_ok = compile_ok && Sys.command run_cmd = 0 in
+  if compile_ok && not run_ok then
+    prerr_endline ("sdl2-ttf-discover: probe execution failed: " ^ run_cmd);
+  let success = compile_ok && run_ok in
   if success then begin
     let ic = open_in out_file in
-    (try
-       while true do
-         print_char (input_char ic)
-       done
-     with End_of_file -> ());
-    close_in ic
+    let output = In_channel.input_all ic in
+    close_in ic;
+    print_string output;
+    prerr_endline ("sdl2-ttf-discover: " ^ String.trim output)
   end;
   cleanup ();
   success
@@ -122,4 +130,9 @@ let () =
             | None -> default
             | Some deps -> deps)
       in
-      if not (compile_and_run c conf) then none_module ())
+      if not (compile_and_run c conf) then begin
+        prerr_endline
+          "sdl2-ttf-discover: could not detect SDL2_ttf library path, \
+           falling back to runtime heuristics";
+        none_module ()
+      end)
