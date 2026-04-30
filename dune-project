@@ -18,4 +18,5 @@
   (tsdl (>= 0.9.1))
    conf-sdl2-ttf
   (ctypes (>= 0.4.0))
-   ctypes-foreign))
+   ctypes-foreign
+   dune-configurator))

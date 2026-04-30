@@ -70,26 +70,35 @@ module Ttf = struct
   *)
 
   let sdl2_ttf_candidates =
-    match Sys.os_type with
-    | "Win32" | "Cygwin" -> [ "SDL2_ttf.dll" ]
-    | "Unix" ->
-        [
-          (* Linux *)
-          "libSDL2_ttf.so";
-          "libSDL2_ttf-2.0.so.0";
-          (* FreeBSD (Not necessary?) *)
-          "libSDL2_ttf.so.0";
-          "/usr/local/lib/libSDL2_ttf.so";
-          "/usr/local/lib/libSDL2_ttf.so.0";
-          "/usr/lib/x86_64-linux-gnu/libSDL2_ttf-2.0.so.0";
-          (* MacOS *)
-          "libSDL2_ttf.dylib";
-          "/Library/Frameworks/SDL2_ttf.framework/SDL2_ttf";
-          "/usr/local/lib/libSDL2_ttf.dylib";
-          "/opt/homebrew/lib/libSDL2_ttf.dylib";
-          "/opt/local/lib/libSDL2_ttf.dylib";
-        ]
-    | _ -> []
+    let platform_candidates =
+      match Sys.os_type with
+      | "Win32" | "Cygwin" -> [ "SDL2_ttf.dll" ]
+      | "Unix" ->
+          [
+            (* Linux *)
+            "libSDL2_ttf.so";
+            "libSDL2_ttf-2.0.so.0";
+            (* FreeBSD (Not necessary?) *)
+            "libSDL2_ttf.so.0";
+            "/usr/local/lib/libSDL2_ttf.so";
+            "/usr/local/lib/libSDL2_ttf.so.0";
+            "/usr/lib/x86_64-linux-gnu/libSDL2_ttf-2.0.so.0";
+            (* MacOS *)
+            "libSDL2_ttf.dylib";
+            "/Library/Frameworks/SDL2_ttf.framework/SDL2_ttf";
+            "/usr/local/lib/libSDL2_ttf.dylib";
+            "/opt/homebrew/lib/libSDL2_ttf.dylib";
+            "/opt/local/lib/libSDL2_ttf.dylib";
+          ]
+      | _ -> []
+    in
+    Option.to_list Sdl2_ttf_config.library_path @ platform_candidates
+
+  let () =
+    if debug then
+      Option.iter
+        (fun s -> print_endline ("Library path detected at build time: " ^ s))
+        Sdl2_ttf_config.library_path
 
   let lib_sdl2 =
     Dynlib.load
