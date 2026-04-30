@@ -48,7 +48,7 @@ jobs:
       - run: opam install .
 
       - if: ${{ contains(matrix.os, 'ubuntu') }}
-        run: sudo apt-get remove libsdl-ttf2.0-dev
+        run: sudo apt-get remove libsdl2-ttf-dev
 
       - shell: bash
         run: eval $(opam env); cd test; ocaml top.ml
