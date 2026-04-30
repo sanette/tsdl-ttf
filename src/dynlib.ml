@@ -16,11 +16,14 @@ let load ?(env = []) ?(debug = false) ~name candidates =
 
   let rec try_all = function
     | [] -> None
-    | filename :: rest -> (
-        try Some (Dl.dlopen ~flags ~filename)
-        with exn ->
-          errors := (filename, exn) :: !errors;
-          try_all rest)
+    | filename :: rest ->
+      try
+        let res = Some (Dl.dlopen ~flags ~filename) in
+        if debug then prerr_endline (sprintf "Dynlib: using %S for %s." filename name);
+        res
+      with exn ->
+        errors := (filename, exn) :: !errors;
+        try_all rest
   in
 
   match try_all candidates with
