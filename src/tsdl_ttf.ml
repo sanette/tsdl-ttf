@@ -71,7 +71,28 @@ module Ttf = struct
 
   let sdl2_ttf_candidates =
     match Sys.os_type with
-    | "Win32" | "Cygwin" -> [ "SDL2_ttf.dll" ]
+    | "Win32" | "Cygwin" ->
+        (* On Windows, also search the executable's directory (where DLLs
+           typically sit next to the .exe for portable apps) and the current
+           working directory. ctypes' Dl.dlopen uses LoadLibrary, which does
+           not reliably search the application directory for bare filenames,
+           especially under Cygwin/opam. *)
+        let exe_dir =
+          try
+            let exe = Sys.executable_name in
+            let abs =
+              if Filename.is_relative exe then
+                Filename.concat (Sys.getcwd ()) exe
+              else exe
+            in
+            Filename.dirname abs
+          with _ -> "."
+        in
+        [
+          Filename.concat exe_dir "SDL2_ttf.dll";
+          Filename.concat "." "SDL2_ttf.dll";
+          "SDL2_ttf.dll";
+        ]
     | "Unix" ->
         [
           (* Linux *)

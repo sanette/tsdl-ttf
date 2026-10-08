@@ -1,5 +1,10 @@
 # pending
 
+* (@bluddy) On Windows, search the executable's directory and the current
+  working directory for SDL2_ttf.dll. ctypes' Dl.dlopen uses LoadLibrary
+  which does not reliably search the application directory for bare
+  filenames, especially under Cygwin/opam.
+
 * Use `Dynlib`
 
 # 0.7 2026/04/04
